@@ -1,0 +1,70 @@
+trigger:
+  branches:
+    include:
+    - refs/heads/main
+  batch: True
+
+resources:
+- repo: self
+
+variables:
+# Group variables
+- group: CodeBuildDeploy-Global
+
+# Service Connections
+- name: ARM_Service_Connection_Prod
+  value: codebuilddeploy-terraform
+- name: ARM_Service_Connection_Non_Prod
+  value: codebuilddeploy-terraform-non-prod
+
+# Branch Variables
+- name: isMain
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+- name: isRelease
+  value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+
+# Agent VM image name
+- name: vmImageName
+  value: 'ubuntu-latest'
+
+# Versioning
+- template: versioning-variables.yml
+
+name: $[variables['build.number']]
+
+stages:
+- stage: Provision_Infrastructure
+  displayName: Provision Infrastructure
+  jobs:
+  - job: Provision_Infrastructure
+    displayName: Provision Infrastructure
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - checkout: self
+      displayName: 'Checkout Platform Repo'
+      persistCredentials: true
+
+    - bash: |
+        echo "isMain = $(isMain)"
+        echo "isRelease = $(isRelease)"
+        echo "Build Number = $(build.number)"
+        echo "Version Assembly = $(version.assembly)"
+        echo "Version File = $(version.file)"
+        echo "Version Informational = $(version.informational)"
+        echo "Version Major = $(major)"
+        echo "Version Minor = $(minor)"
+        echo "Version Patch = $(patch)"
+      displayName: Output Version
+
+    - template: terraform-pipelines.yml
+      parameters: 
+        service_connection: '$(ARM_Service_Connection_Non_Prod)'
+        environment: 'dev'
+
+    - script: |
+        git tag $(version.informational)
+        git push origin $(version.informational)
+      workingDirectory: $(Build.SourcesDirectory)
+      condition: and(or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'release')), succeeded())
+      displayName: Tag Version in Git

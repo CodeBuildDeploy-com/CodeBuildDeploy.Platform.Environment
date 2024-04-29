@@ -1,0 +1,65 @@
+parameters:
+- name: service_connection
+  type: string
+  default: ''
+- name: environment
+  type: string
+  default: ''
+- name: tfstate_storage_account_rg
+  type: string
+  default: 'tfstate-code-build-deploy-rg'
+- name: tfstate_storage_account
+  type: string
+  default: 'tfstatecodebuilddeploysa'
+- name: tfstate_blob_name
+  type: string
+  default: 'tfstate-code-build-deploy-blobc'
+
+steps:
+- task: AzureCLI@2
+  displayName: Azure Account
+  inputs:
+    azureSubscription: ${{parameters.service_connection}}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az --version
+      az account show
+
+- task: TerraformInstaller@1
+  displayName: Install Terraform 1.8.2
+  inputs:
+    terraformVersion: 1.8.2
+
+- task: TerraformTaskV4@4
+  displayName: Initialize Terraform
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform'
+    backendServiceArm: '${{parameters.service_connection}}'
+    backendAzureRmResourceGroupName: '${{parameters.tfstate_storage_account_rg}}'
+    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account}}'
+    backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
+    backendAzureRmKey: '${{parameters.environment}}.tfstate'
+
+- task: TerraformTaskV4@4
+  name: terraformPlan
+  displayName: Create Terraform Plan
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform'
+    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/tfvars/${{parameters.environment}}.tfvars" -lock=false -input=false -out main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'
+
+# Only runs if the 'terraformPlan' task has detected changes the in state. 
+- task: TerraformTaskV4@4
+  displayName: Apply Terraform Plan
+  condition: eq(variables['terraformPlan.changesPresent'], 'true')
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform'
+    commandOptions: 'main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'

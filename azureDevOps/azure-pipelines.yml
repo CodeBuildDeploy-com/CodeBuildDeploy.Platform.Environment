@@ -43,17 +43,16 @@ variables:
 name: $[variables['build.number']]
 
 stages:
-- stage: Init_Vars
-  displayName: Init Vars
+- stage: Build_Umbrella
+  displayName: Build Umbrella
   jobs:
-  - job: Init
-    displayName: Init
+  - job: Init_Vars
+    displayName: Init Vars
     pool:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
       displayName: 'Checkout Repo'
-      persistCredentials: true
 
     - powershell: |
         $shortsha = "$(Build.SourceVersion)".Substring(0, 7)
@@ -84,20 +83,33 @@ stages:
         echo "Version Patch = $(patch)"
       displayName: Output Version
 
+  - job: Tag_Version
+    displayName: Tag Version
+    pool:
+      vmImage: $(vmImageName)
+    condition: and(or(eq(variables.isMain, 'True'), eq(variables.isRelease, 'True')), succeeded())
+    steps:
+    - checkout: self
+      displayName: 'Checkout Repo'
+      persistCredentials: true
+
+    - bash: |
+        echo "Version Informational = $(version.informational)"
+      displayName: Output Version
+
     - script: |
         git tag $(version.informational)
         git push origin $(version.informational)
       workingDirectory: $(Build.SourcesDirectory)
-      condition: and(or(eq(variables.isMain, 'True'), eq(variables.isRelease, 'True')), succeeded())
       displayName: Tag Version in Git
 
 - stage: Provision_NonProd
   displayName: Provision Non Prod Infra
   dependsOn:
-    - Init_Vars
+    - Build_Umbrella
   variables:
   - name: ShortSha
-    value: $[ stageDependencies.Init_Vars.Init.outputs['ShortShaTask.ShortSha'] ]
+    value: $[ stageDependencies.Build_Umbrella.Init_Vars.outputs['ShortShaTask.ShortSha'] ]
 
   jobs:
   - job: Init_TFState

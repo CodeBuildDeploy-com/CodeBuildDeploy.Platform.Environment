@@ -1,0 +1,68 @@
+parameters:
+- name: service_connection
+  type: string
+- name: environment
+  type: string
+- name: environment_spoke
+  type: string
+- name: environment_spoke_postfix
+  type: string
+  default: ''
+- name: tfstate_rg_name
+  type: string
+- name: tfstate_storage_account_name
+  type: string
+- name: tfstate_blob_name
+  type: string
+
+steps:
+- checkout: self
+  displayName: 'Checkout Repo'
+
+- task: AzureCLI@2
+  displayName: Azure Account
+  inputs:
+    azureSubscription: ${{parameters.service_connection}}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az --version
+      az account show
+
+- task: TerraformInstaller@1
+  displayName: Install Terraform 1.8.2
+  inputs:
+    terraformVersion: 1.8.2
+
+- task: TerraformTaskV4@4
+  displayName: Env Spoke Terraform Init
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/spoke'
+    backendServiceArm: '${{parameters.service_connection}}'
+    backendAzureRmResourceGroupName: '${{parameters.tfstate_rg_name}}'
+    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account_name}}'
+    backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
+    backendAzureRmKey: '${{parameters.environment_spoke}}.tfstate'
+
+- task: TerraformTaskV4@4
+  name: spokePlan
+  displayName: Env Spoke Terraform Plan
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/spoke'
+    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/spoke/tfvars/${{parameters.environment_spoke}}.tfvars" -var="environment=${{parameters.environment}}" -var="environment_spoke=${{parameters.environment_spoke}}${{parameters.environment_spoke_postfix}}" -lock=false -input=false -out main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'
+
+# Only runs if the 'terraformPlan' task has detected changes the in state. 
+- task: TerraformTaskV4@4
+  displayName: Env Spoke Terraform Apply
+  condition: eq(variables['spokePlan.changesPresent'], 'true')
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/spoke'
+    commandOptions: 'main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'

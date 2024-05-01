@@ -1,21 +1,24 @@
 parameters:
 - name: service_connection
   type: string
-  default: ''
 - name: environment
   type: string
+- name: environment_spoke
+  type: string
+- name: environment_spoke_postfix
+  type: string
   default: ''
-- name: tfstate_storage_account_rg
+- name: tfstate_rg_name
   type: string
-  default: 'tfstate-code-build-deploy-rg'
-- name: tfstate_storage_account
+- name: tfstate_storage_account_name
   type: string
-  default: 'tfstatecodebuilddeploysa'
 - name: tfstate_blob_name
   type: string
-  default: 'tfstate-code-build-deploy-blobc'
 
 steps:
+- checkout: self
+  displayName: 'Checkout Repo'
+
 - task: AzureCLI@2
   displayName: Azure Account
   inputs:
@@ -38,8 +41,8 @@ steps:
     command: 'init'
     workingDirectory: '$(Build.SourcesDirectory)/terraform'
     backendServiceArm: '${{parameters.service_connection}}'
-    backendAzureRmResourceGroupName: '${{parameters.tfstate_storage_account_rg}}'
-    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account}}'
+    backendAzureRmResourceGroupName: '${{parameters.tfstate_rg_name}}'
+    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account_name}}'
     backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
     backendAzureRmKey: '${{parameters.environment}}.tfstate'
 
@@ -50,7 +53,7 @@ steps:
     provider: 'azurerm'
     command: 'plan'
     workingDirectory: '$(Build.SourcesDirectory)/terraform'
-    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/tfvars/${{parameters.environment}}.tfvars" -lock=false -input=false -out main.tfplan'
+    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/tfvars/${{parameters.environment_spoke}}.tfvars" -var="environment_spoke=${{parameters.environment_spoke}}${{parameters.environment_spoke_postfix}}" -lock=false -input=false -out main.tfplan'
     environmentServiceNameAzureRM: '${{parameters.service_connection}}'
 
 # Only runs if the 'terraformPlan' task has detected changes the in state. 

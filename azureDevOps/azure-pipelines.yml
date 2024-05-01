@@ -2,6 +2,8 @@ trigger:
   branches:
     include:
     - refs/heads/main
+    - refs/heads/release/*
+    - refs/heads/feature/*
   batch: True
 
 resources:
@@ -14,7 +16,7 @@ variables:
 # Service Connections
 - name: ARM_Service_Connection_Prod
   value: codebuilddeploy-terraform
-- name: ARM_Service_Connection_Non_Prod
+- name: ARM_Service_Connection_NonProd
   value: codebuilddeploy-terraform-non-prod
 
 # Branch Variables
@@ -30,24 +32,49 @@ variables:
 # Versioning
 - template: versioning-variables.yml
 
+# Terraform Storage
+- name: tfstate_rg_name_nonprod
+  value: 'tfstate-codebuilddeploy-rg'
+- name: tfstate_storage_account_name_nonprod
+  value: 'tfstatecbdnpd'
+- name: tfstate_blob_name_nonprod
+  value: 'tfstate-codebuilddeploy-blobc'
+
 name: $[variables['build.number']]
 
 stages:
-- stage: Provision_Infrastructure
-  displayName: Provision Infrastructure
+- stage: Init_Vars
+  displayName: Init Vars
   jobs:
-  - job: Provision_Infrastructure
-    displayName: Provision Infrastructure
+  - job: Init
+    displayName: Init
     pool:
       vmImage: $(vmImageName)
     steps:
     - checkout: self
-      displayName: 'Checkout Platform Repo'
+      displayName: 'Checkout Repo'
       persistCredentials: true
+
+    - powershell: |
+        $shortsha = "$(Build.SourceVersion)".Substring(0, 7)
+        Write-Host "##vso[task.setvariable variable=ShortSha;isOutput=true]$shortsha"
+      workingDirectory: $(Build.SourcesDirectory)
+      name: ShortShaTask
+      displayName: Generate ShortSha
+
+    - powershell: |
+        Write-Host "##vso[task.setvariable variable=version.informational]$(version.assembly)-$(ShortShaTask.ShortSha)"
+        Write-Host "##vso[build.updatebuildnumber]$(version.assembly)-$(ShortShaTask.ShortSha)"
+      workingDirectory: $(Build.SourcesDirectory)
+      condition: and(ne(variables.isMain, 'True'), ne(variables.isRelease, 'True'))
+      name: UpdateBuildNumber
+      displayName: Update Build Number
 
     - bash: |
         echo "isMain = $(isMain)"
         echo "isRelease = $(isRelease)"
+        echo "SourceVersion = $(Build.SourceVersion)"
+        echo "ShortSha = $(ShortShaTask.ShortSha)"
         echo "Build Number = $(build.number)"
         echo "Version Assembly = $(version.assembly)"
         echo "Version File = $(version.file)"
@@ -57,14 +84,74 @@ stages:
         echo "Version Patch = $(patch)"
       displayName: Output Version
 
-    - template: terraform-pipelines.yml
-      parameters: 
-        service_connection: '$(ARM_Service_Connection_Non_Prod)'
-        environment: 'dev'
-
     - script: |
         git tag $(version.informational)
         git push origin $(version.informational)
       workingDirectory: $(Build.SourcesDirectory)
-      condition: and(or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'release')), succeeded())
+      condition: and(or(eq(variables.isMain, 'True'), eq(variables.isRelease, 'True')), succeeded())
       displayName: Tag Version in Git
+
+- stage: Provision_NonProd
+  displayName: Provision Non Prod Infra
+  dependsOn:
+    - Init_Vars
+  variables:
+  - name: ShortSha
+    value: $[ stageDependencies.Init_Vars.Init.outputs['ShortShaTask.ShortSha'] ]
+
+  jobs:
+  - job: Init_TFState
+    displayName: Init TFState
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - template: create-tfstate-storage.yml
+      parameters:
+        location: 'uksouth'
+        service_connection: $(ARM_Service_Connection_NonProd)
+        resource_group_name: $(tfstate_rg_name_nonprod)
+        storage_account_name: $(tfstate_storage_account_name_nonprod)
+        container_blob_name: $(tfstate_blob_name_nonprod)
+
+  - ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+    - deployment: Provision_NonProd_Dyn
+      displayName: Provision NonProd Dyn Spoke
+      environment: NonProd-Dyn
+      pool:
+        vmImage: $(vmImageName)
+      dependsOn:
+        - Init_TFState
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: terraform-pipelines.yml
+              parameters: 
+                service_connection: '$(ARM_Service_Connection_NonProd)'
+                environment: 'nonprod'
+                environment_spoke: 'dyn'
+                environment_spoke_postfix: '-$(ShortSha)'
+                tfstate_rg_name: $(tfstate_rg_name_nonprod)
+                tfstate_storage_account_name: $(tfstate_storage_account_name_nonprod)
+                tfstate_blob_name: $(tfstate_blob_name_nonprod)
+
+  - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+    - deployment: Provision_NonProd_Dev
+      displayName: Provision NonProd Dev Spoke
+      environment: NonProd-Dev
+      pool:
+        vmImage: $(vmImageName)
+      dependsOn:
+        - Init_TFState
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: terraform-pipelines.yml
+              parameters: 
+                service_connection: '$(ARM_Service_Connection_NonProd)'
+                environment: 'nonprod'
+                environment_spoke: 'dev'
+                tfstate_rg_name: $(tfstate_rg_name_nonprod)
+                tfstate_storage_account_name: $(tfstate_storage_account_name_nonprod)
+                tfstate_blob_name: $(tfstate_blob_name_nonprod)

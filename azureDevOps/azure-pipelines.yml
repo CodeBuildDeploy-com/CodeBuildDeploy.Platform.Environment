@@ -77,6 +77,7 @@ stages:
         echo "LongSha = $(longsha)"
         echo "LongSha2 = $(longsha2)"
         echo "LongSha3 = $(longsha3)"
+        echo "ShaArray = $(shaarray)"
         echo "Build Number = $(build.number)"
         echo "Version Assembly = $(version.assembly)"
         echo "Version File = $(version.file)"

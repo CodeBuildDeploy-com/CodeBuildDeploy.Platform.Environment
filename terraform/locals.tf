@@ -1,7 +1,6 @@
 locals {
-  environment-resource-tags = {
+  tags = {
     product     = var.product
-    description = var.description
     environment = var.environment
   }
 }

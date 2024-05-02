@@ -1,14 +1,18 @@
+parameters:
+- name: shortsha
+  type: string
+
 variables:
   major: 1
   minor: 0
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
     patch: $[counter(format('{0}.{1}', variables['major'], variables['minor']), 0)]
-    version.assembly: $[format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch'])]
-    version.file: $[format('{0}.{1}', variables['version.assembly'], variables['Build.BuildId'])]
-    version.informational: $[variables['version.file']]
   ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
     patch: 0
-    version.assembly: $[format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch'])]
-    version.file: $[format('{0}.{1}', variables['version.assembly'], variables['Build.BuildId'])]
-    version.informational: $[format('{0}-{1}', variables['version.assembly'], variables['Build.SourceVersion'])]
+  version.assembly: $[format('{0}.{1}.{2}', variables['major'], variables['minor'], variables['patch'])]
+  version.file: $[format('{0}.{1}', variables['version.assembly'], variables['Build.BuildId'])]
+  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+    version.informational: $[variables['version.file']]
+  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+    version.informational: $[format('{0}-{1}', variables['version.assembly'], variables['shortsha'])]
   build.number: $[variables['version.informational']]

@@ -1,0 +1,28 @@
+parameters:
+- name: service_connection
+  type: string
+- name: location
+  type: string
+  default: 'uksouth'
+- name: resource_group_name
+  type: string
+- name: storage_account_name
+  type: string
+- name: container_blob_name
+  type: string
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: ${{ parameters.service_connection }}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Create the resource group
+      az group create --location ${{ parameters.location }} --name ${{ parameters.resource_group_name }}
+
+      # Create the storage account
+      az storage account create --name ${{ parameters.storage_account_name }} --resource-group ${{ parameters.resource_group_name }} --location ${{ parameters.location }} --sku Standard_LRS
+
+      # Create blob container
+      az storage container create --name ${{ parameters.container_blob_name }} --account-name ${{ parameters.storage_account_name }}

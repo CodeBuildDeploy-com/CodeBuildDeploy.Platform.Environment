@@ -29,6 +29,9 @@ variables:
 - name: vmImageName
   value: 'ubuntu-latest'
 
+# Short Sha
+- template: shortsha-variable.yml
+
 # Versioning
 - template: versioning-variables.yml
 
@@ -74,6 +77,8 @@ stages:
         echo "isRelease = $(isRelease)"
         echo "SourceVersion = $(Build.SourceVersion)"
         echo "ShortSha = $(ShortShaTask.ShortSha)"
+        echo "Build.SourceVersion.PreparedForSplit = $(Build.SourceVersion.PreparedForSplit)"
+        echo "Build.SourceVersion.Short = $(Build.SourceVersion.Short)"
         echo "Build Number = $(build.number)"
         echo "Version Assembly = $(version.assembly)"
         echo "Version File = $(version.file)"
@@ -87,6 +92,8 @@ stages:
     displayName: Tag Version
     pool:
       vmImage: $(vmImageName)
+    dependsOn:
+      - Init_Vars
     condition: and(or(eq(variables.isMain, 'True'), eq(variables.isRelease, 'True')), succeeded())
     steps:
     - checkout: self
@@ -104,7 +111,7 @@ stages:
       displayName: Tag Version in Git
 
 - stage: Provision_NonProd
-  displayName: Provision Non Prod Infra
+  displayName: Provision NonProd Infra
   dependsOn:
     - Build_Umbrella
   variables:
@@ -113,7 +120,7 @@ stages:
 
   jobs:
   - job: Init_TFState
-    displayName: Init TFState
+    displayName: Init NonProd TFState
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -125,7 +132,7 @@ stages:
         storage_account_name: $(tfstate_storage_account_name_nonprod)
         container_blob_name: $(tfstate_blob_name_nonprod)
 
-  - deployment: Provision_NonProd
+  - deployment: Provision_Environment
     displayName: Provision NonProd Environment
     environment: NonProd
     pool:
@@ -145,13 +152,13 @@ stages:
               tfstate_blob_name: $(tfstate_blob_name_nonprod)
 
   - ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
-    - deployment: Provision_NonProd_Dyn
+    - deployment: Provision_Dyn_Spoke
       displayName: Provision NonProd Dyn Spoke
       environment: NonProd-Dyn
       pool:
         vmImage: $(vmImageName)
       dependsOn:
-        - Provision_NonProd
+        - Provision_Environment
       strategy:
         runOnce:
           deploy:
@@ -167,13 +174,13 @@ stages:
                 tfstate_blob_name: $(tfstate_blob_name_nonprod)
 
   - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
-    - deployment: Provision_NonProd_Dev
+    - deployment: Provision_Dev_Spoke
       displayName: Provision NonProd Dev Spoke
       environment: NonProd-Dev
       pool:
         vmImage: $(vmImageName)
       dependsOn:
-        - Provision_NonProd
+        - Provision_Environment
       strategy:
         runOnce:
           deploy:

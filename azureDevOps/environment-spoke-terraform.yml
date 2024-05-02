@@ -44,7 +44,7 @@ steps:
     backendAzureRmResourceGroupName: '${{parameters.tfstate_rg_name}}'
     backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account_name}}'
     backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
-    backendAzureRmKey: '${{parameters.environment_spoke}}.tfstate'
+    backendAzureRmKey: '{{parameters.environment}}-${{parameters.environment_spoke}}${{parameters.environment_spoke_postfix}}.tfstate'
 
 - task: TerraformTaskV4@4
   name: spokePlan

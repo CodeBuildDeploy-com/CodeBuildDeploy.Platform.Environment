@@ -1,7 +1,6 @@
 variables:
   major: 1
   minor: 0
-  #shortsha: $[format('{0}{1}{2}{3}{4}{5}{6}', variables['Build.SourceVersion'][0], variables['Build.SourceVersion'][1], variables['Build.SourceVersion'][2], variables['Build.SourceVersion'][3], variables['Build.SourceVersion'][4], variables['Build.SourceVersion'][5], variables['Build.SourceVersion'][6])]
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
     patch: $[counter(format('{0}.{1}', variables['major'], variables['minor']), 0)]
   ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:

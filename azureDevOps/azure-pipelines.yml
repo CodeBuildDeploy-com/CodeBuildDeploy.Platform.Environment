@@ -29,6 +29,9 @@ variables:
 - name: vmImageName
   value: 'ubuntu-latest'
 
+# Short Sha
+- template: shortsha-variable.yml
+
 # Versioning
 - template: versioning-variables.yml
 
@@ -74,10 +77,8 @@ stages:
         echo "isRelease = $(isRelease)"
         echo "SourceVersion = $(Build.SourceVersion)"
         echo "ShortSha = $(ShortShaTask.ShortSha)"
-        echo "ComSepSha1 = $(comsepsha1)"
-        echo "ComSepSha2 = $(comsepsha2)"
-        echo "ComSepSha = $(comsepsha)"
-        echo "Shortsha2 = $(shortsha2)"
+        echo "Build.SourceVersion.PreparedForSplit = $(Build.SourceVersion.PreparedForSplit)"
+        echo "Build.SourceVersion.Short = $(Build.SourceVersion.Short)"
         echo "Build Number = $(build.number)"
         echo "Version Assembly = $(version.assembly)"
         echo "Version File = $(version.file)"

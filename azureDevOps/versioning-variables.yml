@@ -1,11 +1,6 @@
 variables:
   major: 1
   minor: 0
-  comsepsha1: $[replace(replace(replace(replace(replace(variables['Build.SourceVersion'],'0','0,'),'1','1,'),'2','2,'),'3','3,'),'4','4,')]
-  comsepsha2: $[replace(replace(replace(replace(replace(variables.comsepsha1,'5','5,'),'6','6,'),'7','7,'),'8','8,'),'9','9,')]
-  comsepsha: $[replace(replace(replace(replace(replace(replace(variables.comsepsha2,'a','a,'),'b','b,'),'c','c,'),'d','d,'),'e','e,'),'f','f,')]
-  shortsha2: $[format('{0}{1}{2}{3}{4}{5}{6}{7}', 'P', split(variables.comsepsha, ',')[0], split(variables.comsepsha, ',')[1], split(variables.comsepsha, ',')[2], split(variables.comsepsha, ',')[3], split(variables.comsepsha, ',')[4], split(variables.comsepsha, ',')[5], split(variables.comsepsha, ',')[6])]
-  #shortsha: $[format('{0}{1}{2}{3}{4}{5}{6}', variables['Build.SourceVersion'][0], variables['Build.SourceVersion'][1], variables['Build.SourceVersion'][2], variables['Build.SourceVersion'][3], variables['Build.SourceVersion'][4], variables['Build.SourceVersion'][5], variables['Build.SourceVersion'][6])]
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
     patch: $[counter(format('{0}.{1}', variables['major'], variables['minor']), 0)]
   ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:

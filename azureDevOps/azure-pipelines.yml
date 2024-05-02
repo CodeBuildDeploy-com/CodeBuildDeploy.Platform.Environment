@@ -29,13 +29,8 @@ variables:
 - name: vmImageName
   value: 'ubuntu-latest'
 
-# Short Sha
-- template: shortsha-variable.yml
-
 # Versioning
 - template: versioning-variables.yml
-  parameters:
-    shortsha: ${{ variables['Build.SourceVersion.Short'] }}
 
 # Terraform Storage
 - name: tfstate_rg_name_nonprod
@@ -45,7 +40,7 @@ variables:
 - name: tfstate_blob_name_nonprod
   value: 'tfstate-codebuilddeploy-blobc'
 
-name: $[variables['build.number']]
+name: $[variables['Build.Number']]
 
 stages:
 - stage: Build_Umbrella
@@ -64,13 +59,13 @@ stages:
         echo "isRelease = $(isRelease)"
         echo "SourceVersion = $(Build.SourceVersion)"
         echo "SourceVersion.Short = $(Build.SourceVersion.Short)"
-        echo "Build Number = $(build.number)"
-        echo "Version Assembly = $(version.assembly)"
-        echo "Version File = $(version.file)"
-        echo "Version Informational = $(version.informational)"
-        echo "Version Major = $(major)"
-        echo "Version Minor = $(minor)"
-        echo "Version Patch = $(patch)"
+        echo "Build Number = $(Build.Number)"
+        echo "Version Assembly = $(Version.Assembly)"
+        echo "Version File = $(Version.File)"
+        echo "Version Informational = $(Version.Informational)"
+        echo "Version Major = $(Version.Major)"
+        echo "Version Minor = $(Version.Minor)"
+        echo "Version Patch = $(Version.Patch)"
       displayName: Output Version
 
   - job: Tag_Version
@@ -85,13 +80,9 @@ stages:
       displayName: 'Checkout Repo'
       persistCredentials: true
 
-    - bash: |
-        echo "Version Informational = $(version.informational)"
-      displayName: Output Version
-
     - script: |
-        git tag $(version.informational)
-        git push origin $(version.informational)
+        git tag $(Build.Number)
+        git push origin $(Build.Number)
       workingDirectory: $(Build.SourcesDirectory)
       displayName: Tag Version in Git
 

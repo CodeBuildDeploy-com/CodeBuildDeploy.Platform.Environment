@@ -2,7 +2,10 @@ trigger:
   branches:
     include:
     - refs/heads/main
-  batch: True
+    - refs/heads/release/*
+
+pool:
+  vmImage: ubuntu-latest
 
 resources:
 - repo: self
@@ -14,7 +17,7 @@ variables:
 # Service Connections
 - name: ARM_Service_Connection_Prod
   value: codebuilddeploy-terraform
-- name: ARM_Service_Connection_Non_Prod
+- name: ARM_Service_Connection_NonProd
   value: codebuilddeploy-terraform-non-prod
 
 # Branch Variables
@@ -22,49 +25,131 @@ variables:
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isRelease
   value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
-
-# Agent VM image name
-- name: vmImageName
-  value: 'ubuntu-latest'
+- name: isPullRequest
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 # Versioning
 - template: versioning-variables.yml
 
-name: $[variables['build.number']]
+# Terraform Storage
+- name: tfstate_rg_name_nonprod
+  value: 'tfstate-codebuilddeploy-rg'
+- name: tfstate_storage_account_name_nonprod
+  value: 'tfstatecbdnpd'
+- name: tfstate_blob_name_nonprod
+  value: 'tfstate-codebuilddeploy-blobc'
+
+name: $[variables['Build.Number']]
 
 stages:
-- stage: Provision_Infrastructure
-  displayName: Provision Infrastructure
+- stage: Build_Umbrella
+  displayName: Build Umbrella
   jobs:
-  - job: Provision_Infrastructure
-    displayName: Provision Infrastructure
-    pool:
-      vmImage: $(vmImageName)
+  - job: Init_Vars
+    displayName: Init Vars
     steps:
     - checkout: self
-      displayName: 'Checkout Platform Repo'
-      persistCredentials: true
+      displayName: 'Checkout Repo'
 
     - bash: |
         echo "isMain = $(isMain)"
         echo "isRelease = $(isRelease)"
-        echo "Build Number = $(build.number)"
-        echo "Version Assembly = $(version.assembly)"
-        echo "Version File = $(version.file)"
-        echo "Version Informational = $(version.informational)"
-        echo "Version Major = $(major)"
-        echo "Version Minor = $(minor)"
-        echo "Version Patch = $(patch)"
+        echo "isPullRequest = $(isPullRequest)"
+        echo "SourceVersion = $(Build.SourceVersion)"
+        echo "SourceVersion.Short = $(Build.SourceVersion.Short)"
+        echo "Build Number = $(Build.Number)"
+        echo "Version Assembly = $(Version.Assembly)"
+        echo "Version File = $(Version.File)"
+        echo "Version Informational = $(Version.Informational)"
+        echo "Version Major = $(Version.Major)"
+        echo "Version Minor = $(Version.Minor)"
+        echo "Version Patch = $(Version.Patch)"
       displayName: Output Version
 
-    - template: terraform-pipelines.yml
-      parameters: 
-        service_connection: '$(ARM_Service_Connection_Non_Prod)'
-        environment: 'dev'
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    - job: Tag_Version
+      displayName: Tag Version
+      dependsOn:
+        - Init_Vars
+      steps:
+      - checkout: self
+        displayName: 'Checkout Repo'
+        persistCredentials: true
 
-    - script: |
-        git tag $(version.informational)
-        git push origin $(version.informational)
-      workingDirectory: $(Build.SourcesDirectory)
-      condition: and(or(eq(variables['Build.SourceBranchName'], 'main'), startsWith(variables['Build.SourceBranchName'], 'release')), succeeded())
-      displayName: Tag Version in Git
+      - script: |
+          git tag $(Build.Number)
+          git push origin $(Build.Number)
+        workingDirectory: $(Build.SourcesDirectory)
+        displayName: Tag Version in Git
+
+- stage: Provision_NonProd
+  displayName: Provision NonProd Infra
+  dependsOn:
+    - Build_Umbrella
+  jobs:
+  - job: Init_TFState
+    displayName: Init NonProd TFState
+    steps:
+    - template: create-tfstate-storage.yml
+      parameters:
+        location: 'uksouth'
+        service_connection: $(ARM_Service_Connection_NonProd)
+        resource_group_name: $(tfstate_rg_name_nonprod)
+        storage_account_name: $(tfstate_storage_account_name_nonprod)
+        container_blob_name: $(tfstate_blob_name_nonprod)
+
+  - deployment: Provision_Environment
+    displayName: Provision NonProd Environment
+    environment: NonProd
+    dependsOn:
+      - Init_TFState
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: platform-env-terraform.yml
+            parameters: 
+              service_connection: '$(ARM_Service_Connection_NonProd)'
+              platform_env: 'nonprod'
+              tfstate_rg_name: $(tfstate_rg_name_nonprod)
+              tfstate_storage_account_name: $(tfstate_storage_account_name_nonprod)
+              tfstate_blob_name: $(tfstate_blob_name_nonprod)
+
+  - ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+    - deployment: Provision_Dyn_Spoke
+      displayName: Provision NonProd Dyn Spoke
+      environment: NonProd-Dyn
+      dependsOn:
+        - Provision_Environment
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: app-env-terraform.yml
+              parameters: 
+                service_connection: '$(ARM_Service_Connection_NonProd)'
+                platform_env: 'nonprod'
+                app_env: 'dyn'
+                app_env_postfix: '-$(Build.SourceVersion.Short)'
+                tfstate_rg_name: $(tfstate_rg_name_nonprod)
+                tfstate_storage_account_name: $(tfstate_storage_account_name_nonprod)
+                tfstate_blob_name: $(tfstate_blob_name_nonprod)
+
+  - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+    - deployment: Provision_Dev_Spoke
+      displayName: Provision NonProd Dev Spoke
+      environment: NonProd-Dev
+      dependsOn:
+        - Provision_Environment
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - template: app-env-terraform.yml
+              parameters: 
+                service_connection: '$(ARM_Service_Connection_NonProd)'
+                platform_env: 'nonprod'
+                app_env: 'dev'
+                tfstate_rg_name: $(tfstate_rg_name_nonprod)
+                tfstate_storage_account_name: $(tfstate_storage_account_name_nonprod)
+                tfstate_blob_name: $(tfstate_blob_name_nonprod)

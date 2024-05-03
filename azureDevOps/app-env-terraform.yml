@@ -1,0 +1,68 @@
+parameters:
+- name: service_connection
+  type: string
+- name: platform_env
+  type: string
+- name: app_env
+  type: string
+- name: app_env_postfix
+  type: string
+  default: ''
+- name: tfstate_rg_name
+  type: string
+- name: tfstate_storage_account_name
+  type: string
+- name: tfstate_blob_name
+  type: string
+
+steps:
+- checkout: self
+  displayName: 'Checkout Repo'
+
+- task: AzureCLI@2
+  displayName: Azure Account
+  inputs:
+    azureSubscription: ${{parameters.service_connection}}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az --version
+      az account show
+
+- task: TerraformInstaller@1
+  displayName: Install Terraform 1.8.2
+  inputs:
+    terraformVersion: 1.8.2
+
+- task: TerraformTaskV4@4
+  displayName: App Env Terraform Init
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/app_spoke'
+    backendServiceArm: '${{parameters.service_connection}}'
+    backendAzureRmResourceGroupName: '${{parameters.tfstate_rg_name}}'
+    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account_name}}'
+    backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
+    backendAzureRmKey: '${{parameters.platform_env}}-${{parameters.app_env}}${{parameters.app_env_postfix}}.tfstate'
+
+- task: TerraformTaskV4@4
+  name: appEnvPlan
+  displayName: App Env Terraform Plan
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/app_spoke'
+    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/app_spoke/tfvars/${{parameters.app_env}}.tfvars" -var="platform_env=${{parameters.platform_env}}" -var="app_env=${{parameters.app_env}}${{parameters.app_env_postfix}}" -lock=false -input=false -out main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'
+
+# Only runs if the 'terraformPlan' task has detected changes the in state. 
+- task: TerraformTaskV4@4
+  displayName: App Env Terraform Apply
+  condition: eq(variables['appEnvPlan.changesPresent'], 'true')
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(Build.SourcesDirectory)/terraform/app_spoke'
+    commandOptions: 'main.tfplan'
+    environmentServiceNameAzureRM: '${{parameters.service_connection}}'

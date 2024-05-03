@@ -1,21 +1,19 @@
 parameters:
 - name: service_connection
   type: string
-  default: ''
-- name: environment
+- name: platform_env
   type: string
-  default: ''
-- name: tfstate_storage_account_rg
+- name: tfstate_rg_name
   type: string
-  default: 'tfstate-code-build-deploy-rg'
-- name: tfstate_storage_account
+- name: tfstate_storage_account_name
   type: string
-  default: 'tfstatecodebuilddeploysa'
 - name: tfstate_blob_name
   type: string
-  default: 'tfstate-code-build-deploy-blobc'
 
 steps:
+- checkout: self
+  displayName: 'Checkout Repo'
+
 - task: AzureCLI@2
   displayName: Azure Account
   inputs:
@@ -32,31 +30,31 @@ steps:
     terraformVersion: 1.8.2
 
 - task: TerraformTaskV4@4
-  displayName: Initialize Terraform
+  displayName: Platform Env Terraform Init
   inputs:
     provider: 'azurerm'
     command: 'init'
     workingDirectory: '$(Build.SourcesDirectory)/terraform'
     backendServiceArm: '${{parameters.service_connection}}'
-    backendAzureRmResourceGroupName: '${{parameters.tfstate_storage_account_rg}}'
-    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account}}'
+    backendAzureRmResourceGroupName: '${{parameters.tfstate_rg_name}}'
+    backendAzureRmStorageAccountName: '${{parameters.tfstate_storage_account_name}}'
     backendAzureRmContainerName: '${{parameters.tfstate_blob_name}}'
-    backendAzureRmKey: '${{parameters.environment}}.tfstate'
+    backendAzureRmKey: '${{parameters.platform_env}}.tfstate'
 
 - task: TerraformTaskV4@4
-  name: terraformPlan
-  displayName: Create Terraform Plan
+  name: platformEnvPlan
+  displayName: Platform Env Terraform Plan
   inputs:
     provider: 'azurerm'
     command: 'plan'
     workingDirectory: '$(Build.SourcesDirectory)/terraform'
-    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/tfvars/${{parameters.environment}}.tfvars" -lock=false -input=false -out main.tfplan'
+    commandOptions: '-var-file="$(Build.SourcesDirectory)/terraform/tfvars/${{parameters.platform_env}}.tfvars" -var="platform_env=${{parameters.platform_env}}" -lock=false -input=false -out main.tfplan'
     environmentServiceNameAzureRM: '${{parameters.service_connection}}'
 
 # Only runs if the 'terraformPlan' task has detected changes the in state. 
 - task: TerraformTaskV4@4
-  displayName: Apply Terraform Plan
-  condition: eq(variables['terraformPlan.changesPresent'], 'true')
+  displayName: Platform Env Terraform Apply
+  condition: eq(variables['platformEnvPlan.changesPresent'], 'true')
   inputs:
     provider: 'azurerm'
     command: 'apply'

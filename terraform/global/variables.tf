@@ -9,3 +9,13 @@ variable "default_location" {
   description = "Azure Region where resources will default to be provisioned to"
   default     = "uksouth"
 }
+
+variable "address_prefixes_global_vnet" {
+  description = "Address Prefixes for the Global VNet"
+  type        = list(string)
+}
+
+variable "address_prefixes_appgateway_subnet" {
+  description = "Address Prefixes for the App gateway subnet"
+  type        = list(string)
+}

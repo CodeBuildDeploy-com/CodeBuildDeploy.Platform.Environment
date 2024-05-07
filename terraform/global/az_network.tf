@@ -8,16 +8,16 @@ resource "azurerm_virtual_network" "cbd_global_vnet" {
   name                = "cbd-global-vnet"
   resource_group_name = azurerm_resource_group.cbd_global_rg.name
   location            = azurerm_resource_group.cbd_global_rg.location
-  address_space       = ["10.0.0.0/24"]
+  address_space       = var.address_prefixes_global_vnet
 
   tags = local.tags
 }
 
-resource "azurerm_subnet" "cbd_global_subnet1" {
-  name                 = "cbd-global-subnet1"
+resource "azurerm_subnet" "cbd_global_appgateway_subnet" {
+  name                 = "cbd-global-appgateway-subnet"
   resource_group_name  = azurerm_resource_group.cbd_global_rg.name
   virtual_network_name = azurerm_virtual_network.cbd_global_vnet.name
-  address_prefixes     = ["10.0.0.0/26"]
+  address_prefixes     = var.address_prefixes_appgateway_subnet
 }
 
 resource "azurerm_network_security_group" "cbd_global_sg" {
@@ -43,6 +43,6 @@ resource "azurerm_network_security_rule" "cbd_global_sec_rule" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "cbd_global_sga" {
-  subnet_id                 = azurerm_subnet.cbd_global_subnet1.id
+  subnet_id                 = azurerm_subnet.cbd_global_appgateway_subnet.id
   network_security_group_id = azurerm_network_security_group.cbd_global_sg.id
 }

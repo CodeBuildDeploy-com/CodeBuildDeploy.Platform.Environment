@@ -20,6 +20,13 @@ resource "azurerm_subnet" "cbd_global_appgateway_subnet" {
   address_prefixes     = var.address_prefixes_appgateway_subnet
 }
 
+resource "azurerm_subnet" "cbd_global_bastion_subnet" {
+  name                 = "cbd-global-bastion-subnet"
+  resource_group_name  = azurerm_resource_group.cbd_global_rg.name
+  virtual_network_name = azurerm_virtual_network.cbd_global_vnet.name
+  address_prefixes     = var.address_prefixes_bastion_subnet
+}
+
 resource "azurerm_network_security_group" "cbd_global_sg" {
   name                = "cbd-global-sg"
   location            = azurerm_resource_group.cbd_global_rg.location
@@ -42,7 +49,12 @@ resource "azurerm_network_security_rule" "cbd_global_sec_rule" {
   network_security_group_name = azurerm_network_security_group.cbd_global_sg.name
 }
 
-resource "azurerm_subnet_network_security_group_association" "cbd_global_sga" {
+resource "azurerm_subnet_network_security_group_association" "cbd_global_appgateway_sga" {
   subnet_id                 = azurerm_subnet.cbd_global_appgateway_subnet.id
+  network_security_group_id = azurerm_network_security_group.cbd_global_sg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "cbd_global_bastion_sga" {
+  subnet_id                 = azurerm_subnet.cbd_global_bastion_subnet.id
   network_security_group_id = azurerm_network_security_group.cbd_global_sg.id
 }

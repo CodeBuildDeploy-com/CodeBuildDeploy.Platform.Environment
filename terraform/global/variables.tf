@@ -19,3 +19,8 @@ variable "address_prefixes_appgateway_subnet" {
   description = "Address Prefixes for the App gateway subnet"
   type        = list(string)
 }
+
+variable "address_prefixes_bastion_subnet" {
+  description = "Address Prefixes for the Bastion subnet"
+  type        = list(string)
+}

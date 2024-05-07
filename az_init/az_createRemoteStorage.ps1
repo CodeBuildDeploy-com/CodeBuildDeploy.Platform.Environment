@@ -10,7 +10,7 @@ $ENTERPRISE_SUBSCRIPTION='b170b9e9-4ea8-400d-9348-bff06abbba1e'
 az account set --subscription $ENTERPRISE_SUBSCRIPTION
 
 $RESOURCE_GROUP_NAME='cbd-tfstate-rg'
-$STORAGE_ACCOUNT_NAME="tfstatecbdnonprod"
+$STORAGE_ACCOUNT_NAME="tfstatecbdnpd"
 $BLOB_CONTAINER_NAME='tfstate-codebuilddeploy-blobc'
 $LOCATION='uksouth'
 

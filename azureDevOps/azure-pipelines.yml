@@ -33,7 +33,7 @@ variables:
 
 # Terraform Storage
 - name: tfstate_rg_name_nonprod
-  value: 'tfstate-codebuilddeploy-rg'
+  value: 'cbd-tfstate-rg'
 - name: tfstate_storage_account_name_nonprod
   value: 'tfstatecbdnpd'
 - name: tfstate_blob_name_nonprod

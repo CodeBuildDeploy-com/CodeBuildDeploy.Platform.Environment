@@ -49,11 +49,6 @@ resource "azurerm_network_security_rule" "cbd_global_sec_rule" {
   network_security_group_name = azurerm_network_security_group.cbd_global_sg.name
 }
 
-resource "azurerm_subnet_network_security_group_association" "cbd_global_appgateway_sga" {
-  subnet_id                 = azurerm_subnet.cbd_global_appgateway_subnet.id
-  network_security_group_id = azurerm_network_security_group.cbd_global_sg.id
-}
-
 resource "azurerm_subnet_network_security_group_association" "cbd_global_bastion_sga" {
   subnet_id                 = azurerm_subnet.cbd_global_bastion_subnet.id
   network_security_group_id = azurerm_network_security_group.cbd_global_sg.id

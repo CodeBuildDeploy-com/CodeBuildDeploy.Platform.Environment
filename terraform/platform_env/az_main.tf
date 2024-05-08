@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "cbd_env_rg" {
   tags     = local.tags
 }
 
-resource "azurerm_log_analytics_workspace" "cbd_env_law" {
+resource "azurerm_log_analytics_workspace" "cbd_plat_law" {
   name                = "cbd-${var.platform_env}-law"
   resource_group_name = azurerm_resource_group.cbd_env_rg.name
   location            = azurerm_resource_group.cbd_env_rg.location

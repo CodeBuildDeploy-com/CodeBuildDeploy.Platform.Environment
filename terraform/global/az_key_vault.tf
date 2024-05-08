@@ -12,6 +12,16 @@ resource "azurerm_key_vault" "cbd_global_kv" {
   tags = local.tags
 }
 
+resource "azurerm_key_vault_access_policy" "cbd_global_kvp_managed_identity_agw" {
+  key_vault_id = azurerm_key_vault.cbd_global_kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_user_assigned_identity.cbd_global_agw_identity.principal_id
+
+  secret_permissions      = ["Get", "List", "Set", "Delete", "Backup", "Restore"]
+  key_permissions         = ["Get", "List", "Create", "Import", "Delete", "Backup", "Restore", "GetRotationPolicy"]
+  certificate_permissions = ["Get", "List", "Delete", "Create", "Update", "Purge"]
+}
+
 resource "azurerm_key_vault_access_policy" "cbd_global_kvp_principal" {
   key_vault_id = azurerm_key_vault.cbd_global_kv.id
   tenant_id    = data.azurerm_client_config.current.tenant_id

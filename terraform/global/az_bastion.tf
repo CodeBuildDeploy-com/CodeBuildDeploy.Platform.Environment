@@ -2,7 +2,7 @@ resource "azurerm_public_ip" "cbd_global_bastion_ip" {
   name                = "cbd-global-bastion-ip"
   resource_group_name = azurerm_resource_group.cbd_global_rg.name
   location            = azurerm_resource_group.cbd_global_rg.location
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
 
   tags = local.tags
 }

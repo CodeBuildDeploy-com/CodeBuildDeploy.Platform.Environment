@@ -14,10 +14,10 @@ $TERRAFORM_PRINCIPAL = az ad sp create-for-rbac --name codebuilddeploy-terraform
 # Assign the Contributor role to the SP
 # replace <APP_ID> with appId from the newly created SP
 az role assignment create --assignee <APP_ID> \
-  --role Contributor \
+  --role Owner \
   --scope /subscriptions/$ENTERPRISE_SUBSCRIPTION
 az role assignment create --assignee <APP_ID> \
-  --role Contributor \
+  --role Owner \
   --scope /subscriptions/$PREMIUM_SUBSCRIPTION
 
 # login with service Principal

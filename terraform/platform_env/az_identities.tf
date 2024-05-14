@@ -42,7 +42,7 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subnet_apg"
 
 data "azurerm_user_assigned_identity" "cbd_plat_aks_identity_ingress" {
   name                = "ingressapplicationgateway-${azurerm_kubernetes_cluster.cbd_plat_aks_cluster.name}"
-  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+  resource_group_name = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.node_resource_group
 }
 
 data "azurerm_resource_group" "cbd_global_rg" {

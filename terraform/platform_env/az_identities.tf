@@ -45,14 +45,18 @@ data "azurerm_user_assigned_identity" "cbd_plat_aks_identity_ingress" {
   resource_group_name = azurerm_resource_group.cbd_plat_rg.name
 }
 
+data "azurerm_resource_group" "cbd_global_rg" {
+  name     = "cbd-global-rg"
+}
+
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_nc" {
-  scope                = azurerm_resource_group.cbd_global_rg.id
+  scope                = data.azurerm_resource_group.cbd_global_rg.id
   role_definition_name = "Network Contributor"
   principal_id         = data.azurerm_user_assigned_identity.cbd_plat_aks_identity_ingress.principal_id
 }
 
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_read" {
-  scope                = azurerm_resource_group.cbd_global_rg.id
+  scope                = data.azurerm_resource_group.cbd_global_rg.id
   role_definition_name = "Reader"
   principal_id         = data.azurerm_user_assigned_identity.cbd_plat_aks_identity_ingress.principal_id
 }

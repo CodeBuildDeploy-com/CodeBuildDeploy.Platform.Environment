@@ -47,11 +47,11 @@ data "azurerm_resource_group" "cbd_global_rg" {
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_nc" {
   scope                = data.azurerm_resource_group.cbd_global_rg.id
   role_definition_name = "Network Contributor"
-  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity.object_id
+  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }
 
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_read" {
   scope                = data.azurerm_resource_group.cbd_global_rg.id
   role_definition_name = "Reader"
-  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity.object_id
+  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }

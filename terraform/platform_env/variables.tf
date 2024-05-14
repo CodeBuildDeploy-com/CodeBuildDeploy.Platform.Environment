@@ -15,3 +15,28 @@ variable "platform_env" {
   description = "This variable defines the overarching platform environment, including common infrastructure"
   default     = "non-prod"
 }
+
+variable "address_prefixes_platform_vnet" {
+  description = "Address Prefixes for the Platform Env VNet"
+  type        = list(string)
+}
+
+variable "address_prefixes_aks_subnet" {
+  description = "Address Prefixes for the AKS subnet"
+  type        = list(string)
+}
+
+variable "address_prefixes_sqldb_subnet" {
+  description = "Address Prefixes for the Azure SQL subnet"
+  type        = list(string)
+}
+
+variable "aks_service_cidr" {
+  type        = string
+  description = "The Network Range used by the Kubernetes service."
+}
+
+variable "aks_dns_service_ip" {
+  type        = string
+  description = "IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns)"
+}

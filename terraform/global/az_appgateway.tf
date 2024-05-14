@@ -48,7 +48,7 @@ resource "azurerm_application_gateway" "cbd_global_appgateway" {
   }
 
   ssl_certificate {
-    name                = "cbd_global_appgateway-ssl-cert"
+    name                = "cbd-global-appgateway-ssl-cert"
     key_vault_secret_id = data.azurerm_key_vault_certificate.cbd_global_appgateway_cert.secret_id
   }
 
@@ -62,7 +62,7 @@ resource "azurerm_application_gateway" "cbd_global_appgateway" {
     frontend_ip_configuration_name = "cbd-global-appgateway-fe-ip"
     frontend_port_name             = "cbd-global-appgateway-fe-port"
     protocol                       = "Https"
-    ssl_certificate_name           = "cbd_global_appgateway-ssl-cert"
+    ssl_certificate_name           = "cbd-global-appgateway-ssl-cert"
   }
 
   backend_address_pool {

@@ -71,3 +71,28 @@ resource "azurerm_subnet_network_security_group_association" "cbd_plat_sqldb_sga
   subnet_id                 = azurerm_subnet.cbd_plat_subnet_sqldb.id
   network_security_group_id = azurerm_network_security_group.cbd_plat_sg.id
 }
+
+resource "azurerm_network_interface" "cbd_plat_sqldb_nic" {
+  name                = "cbd-${var.platform_env}-sqldb-nic"
+  location            = azurerm_resource_group.cbd_plat_rg.location
+  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+  ip_configuration {
+    name                          = "cbd-${var.platform_env}-sqldb-nic-ic"
+    subnet_id                     = azurerm_subnet.cbd_plat_subnet_sqldb.id
+    private_ip_address_allocation = "Dynamic"
+  }
+  tags = local.tags
+}
+
+resource "azurerm_private_endpoint" "cbd_plat_sqldb_pe" {
+  name                = "cbd-${var.platform_env}-sqldb-pe"
+  location            = azurerm_resource_group.cbd_plat_rg.location
+  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+  subnet_id           = azurerm_subnet.cbd_plat_subnet_sqldb.id
+  private_service_connection {
+    is_manual_connection           = true
+    name                           = "cbd-${var.platform_env}-sqldb-pe-psc"
+    private_connection_resource_id = azurerm_mssql_server.cbd_plat_sql_server.id
+    subresource_names              = ["sqlServer"]
+  }
+}

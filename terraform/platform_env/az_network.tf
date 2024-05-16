@@ -71,3 +71,35 @@ resource "azurerm_subnet_network_security_group_association" "cbd_plat_sqldb_sga
   subnet_id                 = azurerm_subnet.cbd_plat_subnet_sqldb.id
   network_security_group_id = azurerm_network_security_group.cbd_plat_sg.id
 }
+
+resource "azurerm_private_dns_zone" "cbd_plat_sqldb_dns_zone" {
+  name                = "privatelink.database.windows.net"
+  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+}
+
+resource "azurerm_private_endpoint" "cbd_plat_sqldb_pe" {
+  name                          = "cbd-${var.platform_env}-sqldb-pe"
+  location                      = azurerm_resource_group.cbd_plat_rg.location
+  resource_group_name           = azurerm_resource_group.cbd_plat_rg.name
+  subnet_id                     = azurerm_subnet.cbd_plat_subnet_sqldb.id
+  custom_network_interface_name = "cbd-${var.platform_env}-sqldb-pe-nic"
+
+  private_service_connection {
+    name                           = "cbd-${var.platform_env}-sqldb-pe-psc"
+    private_connection_resource_id = azurerm_mssql_server.cbd_plat_sql_server.id
+    subresource_names              = ["sqlServer"]
+    is_manual_connection           = false
+  }
+
+  private_dns_zone_group {
+    name                 = "cbd-${var.platform_env}-sqldb-pe-dzg"
+    private_dns_zone_ids = [azurerm_private_dns_zone.cbd_plat_sqldb_dns_zone.id]
+  }
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "cbd_plat_sqldb_vnet_link" {
+  name                  = "cbd-${var.platform_env}-sqldb-vnet-link"
+  resource_group_name   = azurerm_resource_group.cbd_plat_rg.name
+  private_dns_zone_name = azurerm_private_dns_zone.cbd_plat_sqldb_dns_zone.name
+  virtual_network_id    = azurerm_virtual_network.cbd_plat_vnet.id
+}

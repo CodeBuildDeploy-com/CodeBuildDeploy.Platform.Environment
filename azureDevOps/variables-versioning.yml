@@ -1,16 +1,24 @@
+parameters:
+  - name: buildTypeRelease
+
 variables:
   Version.Major: 1
   Version.Minor: 0
-  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+
+  ${{ if eq(parameters.buildTypeRelease, 'true') }}:
     Version.Patch: $[counter(format('{0}.{1}', variables['Version.Major'], variables['Version.Minor']), 0)]
-  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+  ${{ if ne(parameters.buildTypeRelease, 'true') }}:
     Version.Patch: 0
+
   Version.Assembly: $[format('{0}.{1}.{2}', variables['Version.Major'], variables['Version.Minor'], variables['Version.Patch'])]
   Version.File: $[format('{0}.{1}', variables['Version.Assembly'], variables['Build.BuildId'])]
+
   Build.SourceVersion.PreparedForSplit: ${{ replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(variables['Build.SourceVersion'],'0','0,'),'1','1,'),'2','2,'),'3','3,'),'4','4,'),'5','5,'),'6','6,'),'7','7,'),'8','8,'),'9','9,'),'a','a,'),'b','b,'),'c','c,'),'d','d,'),'e','e,'),'f','f,') }}
   Build.SourceVersion.Short: ${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[0] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[1] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[2] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[3] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[4] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[5] }}${{ split(variables['Build.SourceVersion.PreparedForSplit'], ',')[6] }}
-  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+
+  ${{ if eq(parameters.buildTypeRelease, 'true') }}:
     Version.Informational: $[variables['Version.Assembly']]
-  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+  ${{ if ne(parameters.buildTypeRelease, 'true') }}:
     Version.Informational: $[format('{0}-SV{1}', variables['Version.Assembly'], variables['Build.SourceVersion.Short'])]
+
   Build.Number: $[variables['Version.Informational']]

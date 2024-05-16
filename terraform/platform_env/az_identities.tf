@@ -66,3 +66,9 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_mi_
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }
+
+resource "azurerm_user_assigned_identity" "cbd_plat_sql_server_identity" {
+  name                = "cbd-${var.platform_env}-sql-server-identity"
+  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+  location            = azurerm_resource_group.cbd_plat_rg.location
+}

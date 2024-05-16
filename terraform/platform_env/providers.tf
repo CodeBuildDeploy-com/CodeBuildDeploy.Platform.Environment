@@ -17,6 +17,11 @@ terraform {
       source  = "hashicorp/azuread"
       version = "~> 2.15.0"
     }
+    #https://registry.terraform.io/providers/hashicorp/random/latest/docs
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6.1"
+    }    
   }
 
   backend "azurerm" { }

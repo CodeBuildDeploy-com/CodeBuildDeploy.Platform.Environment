@@ -12,10 +12,10 @@ variable "default_location" {
 
 variable "platform_env" {
   type        = string
-  description = "This variable defines the overarching environment, including common infrastructure"
+  description = "This variable defines the overarching platform environment, including common infrastructure"
 }
 
-variable "app_env" {
-  type        = string
-  description = "This variable defines the app environment spoke, nested apps of the platform environment"
+variable "address_prefixes_platform_vnet" {
+  description = "Address Prefixes for the Platform Env VNet"
+  type        = list(string)
 }

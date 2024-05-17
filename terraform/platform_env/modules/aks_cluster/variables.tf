@@ -15,23 +15,8 @@ variable "platform_env" {
   description = "This variable defines the overarching platform environment, including common infrastructure"
 }
 
-variable "address_prefixes_platform_vnet" {
-  description = "Address Prefixes for the Platform Env VNet"
-  type        = list(string)
-}
-
-variable "address_prefixes_appgateway_subnet" {
-  description = "Address Prefixes for the App gateway subnet"
-  type        = list(string)
-}
-
 variable "address_prefixes_aks_subnet" {
   description = "Address Prefixes for the AKS subnet"
-  type        = list(string)
-}
-
-variable "address_prefixes_sqldb_subnet" {
-  description = "Address Prefixes for the Azure SQL subnet"
   type        = list(string)
 }
 

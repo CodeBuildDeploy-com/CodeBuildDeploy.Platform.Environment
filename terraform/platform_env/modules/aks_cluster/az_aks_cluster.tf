@@ -1,10 +1,22 @@
+# Network
+resource "azurerm_subnet" "cbd_plat_subnet_aks" {
+  name                 = "cbd-${var.platform_env}-subnet-aks"
+  resource_group_name  = data.azurerm_resource_group.cbd_plat_rg.name
+  virtual_network_name = data.azurerm_virtual_network.cbd_plat_vnet.name
+  address_prefixes     = var.address_prefixes_aks_subnet
+}
+
+resource "azurerm_subnet_network_security_group_association" "cbd_plat_aks_sga" {
+  subnet_id                 = azurerm_subnet.cbd_plat_subnet_aks.id
+  network_security_group_id = data.azurerm_network_security_group.cbd_plat_sg.id
+}
+
 # Datasource to get Latest Azure AKS latest Version
 data "azurerm_kubernetes_service_versions" "current" {
-  location        = azurerm_resource_group.cbd_plat_rg.location
+  location        = data.azurerm_resource_group.cbd_plat_rg.location
   include_preview = false
 }
 
-# Azure AKS Version
 output "latest_version" {
   value = data.azurerm_kubernetes_service_versions.current.latest_version
 }
@@ -16,38 +28,24 @@ resource "azuread_group" "cbd_plat_aks_administrators" {
   description      = "Azure AKS Kubernetes administrators for the cbd-${var.platform_env}-aks-cluster."
 }
 
-# Azure AD Group Object Id
 output "azure_ad_group_id" {
   value = azuread_group.cbd_plat_aks_administrators.id
 }
+
 output "azure_ad_group_objectid" {
   value = azuread_group.cbd_plat_aks_administrators.object_id
-}
-
-data "azurerm_key_vault" "cbd_global_kv" {
-  name                = "cbd-global-kv1"
-  resource_group_name = "cbd-global-rg"
-}
-
-data "azurerm_key_vault_secret" "cbd_plat_aks_ssh_key" {
-  name         = "cbd-${var.platform_env}-aks-ssh-key"
-  key_vault_id = data.azurerm_key_vault.cbd_global_kv.id
-}
-
-data "azurerm_application_gateway" "cbd_global_appgateway" {
-  name                = "cbd-global-appgateway"
-  resource_group_name = "cbd-global-rg"
 }
 
 # Create AKS Cluster
 resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   name                              = "cbd-${var.platform_env}-aks-cluster"
-  location                          = azurerm_resource_group.cbd_plat_rg.location
-  resource_group_name               = azurerm_resource_group.cbd_plat_rg.name
+  location                          = data.azurerm_resource_group.cbd_plat_rg.location
+  resource_group_name               = data.azurerm_resource_group.cbd_plat_rg.name
 
   lifecycle {
     ignore_changes = [
       default_node_pool.0.node_count, # this prevents aks from scaling as we reset the node count every time we deploy so we need to ignore changes to the node count
+      default_node_pool.0.upgrade_settings
     ]
   }
 
@@ -90,7 +88,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   }
 
   oms_agent {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.cbd_plat_law.id
+    log_analytics_workspace_id = data.azurerm_log_analytics_workspace.cbd_plat_law.id
   }
 
   network_profile {
@@ -114,7 +112,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   }
 
   ingress_application_gateway {
-    gateway_id   = data.azurerm_application_gateway.cbd_global_appgateway.id
+    gateway_id   = data.azurerm_application_gateway.cbd_plat_appgateway.id
   }
 
   tags = local.tags

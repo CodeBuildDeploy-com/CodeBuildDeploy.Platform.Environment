@@ -1,7 +1,20 @@
+# Network
+resource "azurerm_subnet" "cbd_global_bastion_subnet" {
+  name                 = "cbd-global-bastion-subnet"
+  resource_group_name  = data.azurerm_resource_group.cbd_global_rg.name
+  virtual_network_name = data.azurerm_virtual_network.cbd_global_vnet.name
+  address_prefixes     = var.address_prefixes_bastion_subnet
+}
+
+resource "azurerm_subnet_network_security_group_association" "cbd_global_bastion_sga" {
+  subnet_id                 = azurerm_subnet.cbd_global_bastion_subnet.id
+  network_security_group_id = data.azurerm_network_security_group.cbd_global_sg.id
+}
+
 resource "azurerm_public_ip" "cbd_global_bastion_ip" {
   name                = "cbd-global-bastion-ip"
-  resource_group_name = azurerm_resource_group.cbd_global_rg.name
-  location            = azurerm_resource_group.cbd_global_rg.location
+  resource_group_name = data.azurerm_resource_group.cbd_global_rg.name
+  location            = data.azurerm_resource_group.cbd_global_rg.location
   allocation_method   = "Static"
 
   tags = local.tags
@@ -9,8 +22,8 @@ resource "azurerm_public_ip" "cbd_global_bastion_ip" {
 
 resource "azurerm_network_interface" "cbd_global_bastion_nic" {
   name                = "cbd-global-bastion-nic"
-  location            = azurerm_resource_group.cbd_global_rg.location
-  resource_group_name = azurerm_resource_group.cbd_global_rg.name
+  location            = data.azurerm_resource_group.cbd_global_rg.location
+  resource_group_name = data.azurerm_resource_group.cbd_global_rg.name
 
   ip_configuration {
     name                          = "internal"
@@ -22,20 +35,16 @@ resource "azurerm_network_interface" "cbd_global_bastion_nic" {
   tags = local.tags
 }
 
-data "azurerm_key_vault_secret" "cbd_global_bastion_ssh_key" {
-  name         = "cbd-global-bastion-ssh-key"
-  key_vault_id = azurerm_key_vault.cbd_global_kv.id
-}
-
+# Virtual Machine
 resource "azurerm_linux_virtual_machine" "cbd_global_bastion_vm" {
   name                  = "cbd-global-bastion-vm"
-  resource_group_name   = azurerm_resource_group.cbd_global_rg.name
-  location              = azurerm_resource_group.cbd_global_rg.location
+  resource_group_name   = data.azurerm_resource_group.cbd_global_rg.name
+  location              = data.azurerm_resource_group.cbd_global_rg.location
   size                  = "Standard_B1s"
   admin_username        = "adminuser"
   network_interface_ids = [azurerm_network_interface.cbd_global_bastion_nic.id]
 
-  custom_data = filebase64("templates/customdata.tpl")
+  custom_data = filebase64("${path.module}/templates/customdata.tpl")
 
   admin_ssh_key {
     username   = "adminuser"

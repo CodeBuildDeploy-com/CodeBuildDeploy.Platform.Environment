@@ -1,7 +1,8 @@
+# AKS Managed Identity
 resource "azurerm_user_assigned_identity" "cbd_plat_aks_identity" {
   name                = "cbd-${var.platform_env}-aks-identity"
-  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
-  location            = azurerm_resource_group.cbd_plat_rg.location
+  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
+  location            = data.azurerm_resource_group.cbd_plat_rg.location
 }
 
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_cluster" {
@@ -17,7 +18,7 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_cluster_adm
 }
 
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_vnet" {
-  scope                = azurerm_virtual_network.cbd_plat_vnet.id
+  scope                = data.azurerm_virtual_network.cbd_plat_vnet.id
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
 }
@@ -28,47 +29,27 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subscriptio
   principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
 }
 
-data "azurerm_subnet" "cbd_global_appgateway_subnet" {
-  name                 = "cbd-global-appgateway-subnet"
-  virtual_network_name = "cbd-global-vnet"
-  resource_group_name  = "cbd-global-rg"
-}
-
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subnet_apg" {
-  scope                = data.azurerm_subnet.cbd_global_appgateway_subnet.id
+  scope                = data.azurerm_subnet.cbd_plat_appgateway_subnet.id
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
 }
 
-data "azurerm_resource_group" "cbd_global_rg" {
-  name     = "cbd-global-rg"
-}
-
+# AKS Ingress Managed Identity
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_nc" {
-  scope                = data.azurerm_resource_group.cbd_global_rg.id
+  scope                = data.azurerm_resource_group.cbd_plat_rg.id
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }
 
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_read" {
-  scope                = data.azurerm_resource_group.cbd_global_rg.id
+  scope                = data.azurerm_resource_group.cbd_plat_rg.id
   role_definition_name = "Reader"
   principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }
 
-data "azurerm_user_assigned_identity" "cbd_global_agw_identity" {
-  name                = "cbd-global-agw-identity"
-  resource_group_name = "cbd-global-rg"
-}
-
 resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_mi_oper" {
-  scope                = data.azurerm_user_assigned_identity.cbd_global_agw_identity.id
+  scope                = data.azurerm_user_assigned_identity.cbd_plat_agw_identity.id
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
-}
-
-resource "azurerm_user_assigned_identity" "cbd_plat_sql_server_identity" {
-  name                = "cbd-${var.platform_env}-sql-server-identity"
-  resource_group_name = azurerm_resource_group.cbd_plat_rg.name
-  location            = azurerm_resource_group.cbd_plat_rg.location
 }

@@ -14,8 +14,3 @@ variable "address_prefixes_global_vnet" {
   description = "Address Prefixes for the Global VNet"
   type        = list(string)
 }
-
-variable "address_prefixes_bastion_subnet" {
-  description = "Address Prefixes for the Bastion subnet"
-  type        = list(string)
-}

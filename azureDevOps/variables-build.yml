@@ -1,7 +1,3 @@
-parameters:
-  - name: deployNonProd
-    type: boolean
-
 variables:
   ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
     build.type.release: 'true'
@@ -13,15 +9,3 @@ variables:
     build.type.manual: 'true'
   ${{ if and(ne(variables['Build.Reason'], ''), ne(variables['Build.Reason'], 'Manual')) }}:
     build.type.manual: 'false'
-
-  ${{ if eq(variables['build.type.manual'], 'true') }}:
-    deploy.nonprod: ${{ parameters.deployNonProd }}
-  ${{ if and(ne(variables['build.type.manual'], 'true'), eq(variables['build.type.release'], 'true')) }}:
-    deploy.nonprod: 'true'
-  ${{ if and(ne(variables['build.type.manual'], 'true'), ne(variables['build.type.release'], 'true')) }}:
-    deploy.nonprod: 'false'
-
-  ${{ if eq(variables['build.type.release'], 'true') }}:
-    deploy.prod: 'true'
-  ${{ if ne(variables['build.type.release'], 'true') }}:
-    deploy.prod: 'false'

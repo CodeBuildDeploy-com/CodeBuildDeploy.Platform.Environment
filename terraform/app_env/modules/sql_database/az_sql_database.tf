@@ -1,8 +1,3 @@
-data "azurerm_mssql_server" "cbd_plat_sql_server" {
-  name                         = "cbd-${var.platform_env}-sql-server"
-  resource_group_name          = "cbd-${var.platform_env}-rg"
-}
-
 resource "azurerm_mssql_database" "cbd_app_sql_database" {
   name           = "cbd-${var.platform_env}-${var.app_env}-sql-database"
   server_id      = data.azurerm_mssql_server.cbd_plat_sql_server.id

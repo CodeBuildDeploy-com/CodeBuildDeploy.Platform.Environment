@@ -1,9 +1,14 @@
 parameters:
   - name: buildTypeRelease
+    type: boolean
+  - name: majorVersion
+    type: number
+  - name: minorVersion
+    type: number
 
 variables:
-  Version.Major: 1
-  Version.Minor: 0
+  Version.Major: ${{ parameters.majorVersion }}
+  Version.Minor: ${{ parameters.minorVersion }}
 
   ${{ if eq(parameters.buildTypeRelease, 'true') }}:
     Version.Patch: $[counter(format('{0}.{1}', variables['Version.Major'], variables['Version.Minor']), 0)]

@@ -25,6 +25,16 @@ module "cbd_plat_aks_cluster" {
   aks_dns_service_ip = var.aks_dns_service_ip
 }
 
+module "cbd_plat_aks_cluster_configure" {
+  depends_on          = [module.cbd_plat_aks_cluster] 
+
+  source = "./modules/aks_cluster_configure"
+ 
+  platform_env = var.platform_env
+  container_registry = var.container_registry
+  container_registry_username = var.container_registry_username
+}
+
 module "cbd_plat_sql_server" {
   depends_on          = [module.cbd_global_core_resources]
 

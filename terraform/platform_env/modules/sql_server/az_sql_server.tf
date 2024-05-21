@@ -21,7 +21,7 @@ resource "random_password" "cbd_plat_sql_server_admin_password" {
   special          = true
   min_upper        = 2
   min_special      = 2
-  override_special = "!#$%&*_=+?"
+  override_special = "!#$%*_+?"
 }
 
 resource "azurerm_key_vault_secret" "cbd_plat_sql_server_admin_password" {

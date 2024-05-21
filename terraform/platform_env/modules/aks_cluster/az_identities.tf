@@ -53,3 +53,10 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_mi_
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
 }
+
+# Terraform User
+resource "azurerm_role_assignment" "cbd_plat_aks_cluster_admin_role_assignment_terraform_user" {
+  scope                = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.id
+  role_definition_name = "Azure Kubernetes Service Cluster Admin Role"
+  principal_id         = data.azurerm_client_config.current.object_id
+}

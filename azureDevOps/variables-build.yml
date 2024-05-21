@@ -1,11 +1,7 @@
-parameters:
-  - name: deployNonProd
-    type: boolean
-
 variables:
-  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+  ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
     build.type.release: 'true'
-  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
+  ${{ if and(ne(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.SourceBranch'], 'refs/heads/master'), ne(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), 'True')) }}:
     build.type.release: 'false'
 
   # Build.Reason is blank when specifying parameters but Manual when running the pipeline
@@ -13,15 +9,3 @@ variables:
     build.type.manual: 'true'
   ${{ if and(ne(variables['Build.Reason'], ''), ne(variables['Build.Reason'], 'Manual')) }}:
     build.type.manual: 'false'
-
-  ${{ if eq(variables['build.type.manual'], 'true') }}:
-    deploy.nonprod: ${{ parameters.deployNonProd }}
-  ${{ if and(ne(variables['build.type.manual'], 'true'), eq(variables['build.type.release'], 'true')) }}:
-    deploy.nonprod: 'true'
-  ${{ if and(ne(variables['build.type.manual'], 'true'), ne(variables['build.type.release'], 'true')) }}:
-    deploy.nonprod: 'false'
-
-  ${{ if eq(variables['build.type.release'], 'true') }}:
-    deploy.prod: 'true'
-  ${{ if ne(variables['build.type.release'], 'true') }}:
-    deploy.prod: 'false'

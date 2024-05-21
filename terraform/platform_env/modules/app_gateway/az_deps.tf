@@ -1,7 +1,7 @@
 data "azurerm_client_config" "current" {}
 
 data "azurerm_resource_group" "cbd_global_rg" {
-  name     = "cbd-global-rg"
+  name = "cbd-global-rg"
 }
 
 data "azurerm_key_vault" "cbd_global_kv" {
@@ -15,7 +15,7 @@ data "azurerm_key_vault_certificate" "cbd_plat_appgateway_cert" {
 }
 
 data "azurerm_resource_group" "cbd_plat_rg" {
-  name     = "cbd-${var.platform_env}-rg"
+  name = "cbd-${var.platform_env}-rg"
 }
 
 data "azurerm_key_vault" "cbd_plat_kv" {

@@ -30,6 +30,8 @@ steps:
       az --version
       az account show
 
+- task: KubeloginInstaller@0
+
 - task: TerraformInstaller@1
   displayName: Install Terraform 1.8.2
   inputs:

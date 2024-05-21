@@ -5,7 +5,7 @@ resource "azurerm_virtual_network" "cbd_plat_vnet" {
   location            = azurerm_resource_group.cbd_plat_rg.location
   address_space       = var.address_prefixes_platform_vnet
 
-  tags = local.tags
+  tags                = local.tags
 }
 
 # Peer with the Global VNet
@@ -31,10 +31,10 @@ resource "azurerm_virtual_network_peering" "cbd_vnet_peer_plat_global" {
 # Create the Security Group
 resource "azurerm_network_security_group" "cbd_plat_sg" {
   name                = "cbd-${var.platform_env}-sg"
-  location            = azurerm_resource_group.cbd_plat_rg.location
   resource_group_name = azurerm_resource_group.cbd_plat_rg.name
+  location            = azurerm_resource_group.cbd_plat_rg.location
 
-  tags = local.tags
+  tags                = local.tags
 }
 
 resource "azurerm_network_security_rule" "cbd_plat_sec_rule" {

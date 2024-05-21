@@ -10,7 +10,12 @@ terraform {
     #https://registry.terraform.io/providers/hashicorp/azuread/latest/docs
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~> 2.15.0"
+      version = "~> 2.50.0"
+    }
+    #https://registry.terraform.io/providers/Azure/azapi/latest/docs
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~>1.13.1"
     }
   }
 
@@ -26,4 +31,10 @@ provider "azurerm" {
   }
 }
 
-provider "azuread" { }
+data "azurerm_client_config" "current" {}
+
+provider "azuread" {
+  tenant_id = data.azurerm_client_config.current.tenant_id
+}
+
+provider "azapi" { }

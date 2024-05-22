@@ -29,30 +29,31 @@ resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subscriptio
   principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
 }
 
-resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subnet_apg" {
-  scope                = data.azurerm_subnet.cbd_plat_appgateway_subnet.id
-  role_definition_name = "Network Contributor"
-  principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
-}
+# App Gateway
+#resource "azurerm_role_assignment" "cbd_plat_aks_identity_assignment_subnet_apg" {
+#  scope                = data.azurerm_subnet.cbd_plat_appgateway_subnet.id
+#  role_definition_name = "Network Contributor"
+#  principal_id         = azurerm_user_assigned_identity.cbd_plat_aks_identity.principal_id
+#}
 
-# AKS Ingress Managed Identity
-resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_nc" {
-  scope                = data.azurerm_resource_group.cbd_plat_rg.id
-  role_definition_name = "Network Contributor"
-  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
-}
+# App Gateway AKS Ingress Managed Identity
+#resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_nc" {
+#  scope                = data.azurerm_resource_group.cbd_plat_rg.id
+#  role_definition_name = "Network Contributor"
+#  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+#}
 
-resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_read" {
-  scope                = data.azurerm_resource_group.cbd_plat_rg.id
-  role_definition_name = "Reader"
-  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
-}
+#resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_rg_read" {
+#  scope                = data.azurerm_resource_group.cbd_plat_rg.id
+#  role_definition_name = "Reader"
+#  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+#}
 
-resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_mi_oper" {
-  scope                = data.azurerm_user_assigned_identity.cbd_plat_agw_identity.id
-  role_definition_name = "Managed Identity Operator"
-  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
-}
+#resource "azurerm_role_assignment" "cbd_plat_aks_identity_ingress_assignment_mi_oper" {
+#  scope                = data.azurerm_user_assigned_identity.cbd_plat_agw_identity.id
+#  role_definition_name = "Managed Identity Operator"
+#  principal_id         = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+#}
 
 # Terraform User
 resource "azurerm_role_assignment" "cbd_plat_aks_cluster_admin_role_assignment_terraform_user" {

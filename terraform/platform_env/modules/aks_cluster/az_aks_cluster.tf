@@ -95,9 +95,9 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     managed                = true
   }
 
-  ingress_application_gateway {
-    gateway_id = data.azurerm_application_gateway.cbd_plat_appgateway.id
-  }
+  #ingress_application_gateway {
+  #  gateway_id = data.azurerm_application_gateway.cbd_plat_appgateway.id
+  #}
 
   tags = local.tags
 }

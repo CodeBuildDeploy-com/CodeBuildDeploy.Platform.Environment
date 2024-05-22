@@ -33,18 +33,19 @@ data "azurerm_network_security_group" "cbd_plat_sg" {
   resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
 }
 
-data "azurerm_application_gateway" "cbd_plat_appgateway" {
-  name                = "cbd-${var.platform_env}-appgateway"
-  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
-}
+# App Gateway
+#data "azurerm_application_gateway" "cbd_plat_appgateway" {
+#  name                = "cbd-${var.platform_env}-appgateway"
+#  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
+#}
 
-data "azurerm_subnet" "cbd_plat_appgateway_subnet" {
-  name                 = "cbd-${var.platform_env}-appgateway-subnet"
-  resource_group_name  = data.azurerm_resource_group.cbd_plat_rg.name
-  virtual_network_name = data.azurerm_virtual_network.cbd_plat_vnet.name
-}
+#data "azurerm_subnet" "cbd_plat_appgateway_subnet" {
+#  name                 = "cbd-${var.platform_env}-appgateway-subnet"
+#  resource_group_name  = data.azurerm_resource_group.cbd_plat_rg.name
+#  virtual_network_name = data.azurerm_virtual_network.cbd_plat_vnet.name
+#}
 
-data "azurerm_user_assigned_identity" "cbd_plat_agw_identity" {
-  name                = "cbd-${var.platform_env}-agw-identity"
-  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
-}
+#data "azurerm_user_assigned_identity" "cbd_plat_agw_identity" {
+#  name                = "cbd-${var.platform_env}-agw-identity"
+#  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
+#}

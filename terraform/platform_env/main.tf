@@ -6,22 +6,23 @@ module "cbd_plat_core_resources" {
 }
 
 module "cbd_plat_container_registry" {
-  depends_on = [module.cbd_plat_core_resources] 
+  depends_on = [module.cbd_plat_core_resources]
   source     = "./modules/container_registry"
 
   platform_env = var.platform_env
 }
 
-module "cbd_plat_app_gateway" {
-  depends_on = [module.cbd_plat_core_resources] 
-  source     = "./modules/app_gateway"
+#module "cbd_plat_app_gateway" {
+#  depends_on = [module.cbd_plat_core_resources]
+#  source     = "./modules/app_gateway"
  
-  platform_env                       = var.platform_env
-  address_prefixes_appgateway_subnet = var.address_prefixes_appgateway_subnet
-}
+#  platform_env                       = var.platform_env
+#  address_prefixes_appgateway_subnet = var.address_prefixes_appgateway_subnet
+#}
 
 module "cbd_plat_aks_cluster" {
-  depends_on = [module.cbd_plat_app_gateway] 
+  depends_on = [module.cbd_plat_core_resources]
+#  depends_on = [module.cbd_plat_app_gateway]
   source     = "./modules/aks_cluster"
  
   platform_env                = var.platform_env

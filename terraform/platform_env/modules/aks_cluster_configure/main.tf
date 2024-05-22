@@ -18,3 +18,18 @@ resource "kubernetes_secret" "cbd_plat_kubernetes_pull_secret" {
     })
   }
 }
+
+#resource "kubernetes_namespace" "cbd_plat_aks_ingress_nginx_namespace" {
+#  metadata {
+#    name = "ingress-nginx"
+#  }
+#}
+
+resource "helm_release" "cbd_plat_helm_nginx" {
+  name             = "ingress-nginx"
+  chart            = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  #version          = "4.10.1"
+  namespace        = "ingress-nginx"
+  create_namespace = true
+}

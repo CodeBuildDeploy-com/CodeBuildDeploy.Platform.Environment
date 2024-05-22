@@ -21,21 +21,6 @@ output "latest_version" {
   value = data.azurerm_kubernetes_service_versions.current.latest_version
 }
 
-# Create Azure AD Group in Active Directory for AKS Admins
-resource "azuread_group" "cbd_plat_aks_administrators" {
-  display_name     = "cbd-${var.platform_env}-aks-administrators"
-  security_enabled = true
-  description      = "Azure AKS Kubernetes administrators for the cbd-${var.platform_env}-aks-cluster."
-}
-
-output "azure_ad_group_id" {
-  value = azuread_group.cbd_plat_aks_administrators.id
-}
-
-output "azure_ad_group_objectid" {
-  value = azuread_group.cbd_plat_aks_administrators.object_id
-}
-
 # Create AKS Cluster
 resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   name                              = "cbd-${var.platform_env}-aks-cluster"
@@ -108,11 +93,10 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
     managed                = true
-    admin_group_object_ids = [azuread_group.cbd_plat_aks_administrators.id]
   }
 
   ingress_application_gateway {
-    gateway_id   = data.azurerm_application_gateway.cbd_plat_appgateway.id
+    gateway_id = data.azurerm_application_gateway.cbd_plat_appgateway.id
   }
 
   tags = local.tags

@@ -44,3 +44,13 @@ variable "aks_dns_service_ip" {
   type        = string
   description = "IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns)"
 }
+
+variable "container_registry" {
+  type        = string
+  description = "The name of the container registry e.g. codebuilddeploy.azurecr.io"
+}
+
+variable "container_registry_username" {
+  type        = string
+  description = "The name of the user to access the container registry"
+}

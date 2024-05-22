@@ -1,5 +1,5 @@
 locals {
   tags = {
-    product      = var.product
+    product = var.product
   }
 }

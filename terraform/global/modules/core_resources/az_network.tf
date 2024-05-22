@@ -10,7 +10,7 @@ resource "azurerm_virtual_network" "cbd_global_vnet" {
   location            = azurerm_resource_group.cbd_global_rg.location
   address_space       = var.address_prefixes_global_vnet
 
-  tags = local.tags
+  tags                = local.tags
 }
 
 resource "azurerm_network_security_group" "cbd_global_sg" {
@@ -18,7 +18,7 @@ resource "azurerm_network_security_group" "cbd_global_sg" {
   location            = azurerm_resource_group.cbd_global_rg.location
   resource_group_name = azurerm_resource_group.cbd_global_rg.name
 
-  tags = local.tags
+  tags                = local.tags
 }
 
 resource "azurerm_network_security_rule" "cbd_global_sec_rule" {

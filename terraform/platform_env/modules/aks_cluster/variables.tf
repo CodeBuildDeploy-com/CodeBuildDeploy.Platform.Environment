@@ -29,3 +29,18 @@ variable "aks_dns_service_ip" {
   type        = string
   description = "IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns)"
 }
+
+variable "aks_system_pool_vm_size" {
+  type        = string
+  description = "The SKU to be used by the AKS system node pool"
+}
+
+variable "aks_system_pool_min_count" {
+  type        = number
+  description = "The minimum count in the AKS system node pool"
+}
+
+variable "aks_system_pool_max_count" {
+  type        = number
+  description = "The maximum count in the AKS system node pool"
+}

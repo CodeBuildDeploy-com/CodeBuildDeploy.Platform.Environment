@@ -7,6 +7,9 @@ address_prefixes_aks_subnet        = ["10.0.4.64/26"]
 address_prefixes_sqldb_subnet      = ["10.0.4.128/28"]
 aks_service_cidr                   = "10.0.3.0/26"
 aks_dns_service_ip                 = "10.0.3.10"
+aks_system_pool_vm_size            = "Standard_D2_v3"
+aks_system_pool_min_count          = 1
+aks_system_pool_max_count          = 3
 
 container_registry          = "codebuilddeploy.azurecr.io"
 container_registry_username = "codebuilddeploy"

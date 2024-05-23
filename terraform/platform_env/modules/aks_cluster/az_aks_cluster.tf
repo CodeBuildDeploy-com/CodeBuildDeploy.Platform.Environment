@@ -41,12 +41,12 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
 
   default_node_pool {
     name                 = "systempool"
-    vm_size              = "Standard_D2_v3"
+    vm_size              = var.aks_system_pool_vm_size
     orchestrator_version = data.azurerm_kubernetes_service_versions.current.latest_version
     zones                = [1, 2, 3]
     enable_auto_scaling  = true
-    max_count            = 3
-    min_count            = 1
+    max_count            = var.aks_system_pool_max_count
+    min_count            = var.aks_system_pool_min_count
     os_disk_size_gb      = 30
     type                 = "VirtualMachineScaleSets"
     vnet_subnet_id       = azurerm_subnet.cbd_plat_subnet_aks.id
@@ -95,9 +95,9 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     managed                = true
   }
 
-  ingress_application_gateway {
-    gateway_id = data.azurerm_application_gateway.cbd_plat_appgateway.id
-  }
+  #ingress_application_gateway {
+  #  gateway_id = data.azurerm_application_gateway.cbd_plat_appgateway.id
+  #}
 
   tags = local.tags
 }

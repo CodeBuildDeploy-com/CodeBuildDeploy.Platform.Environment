@@ -26,4 +26,6 @@ variables:
   ${{ if ne(parameters.buildTypeRelease, 'true') }}:
     Version.Informational: $[format('{0}-SV{1}', variables['Version.Assembly'], variables['Build.SourceVersion.Short'])]
 
+  Version.Informational.Kebab: $[ replace(variables['Version.Informational'],'.','-') ]
+
   Build.Number: $[variables['Version.Informational']]

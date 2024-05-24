@@ -1,7 +1,10 @@
 variables:
-  Azure.Subscription.NonProd: "codebuilddeploy-terraform-non-prod"
+  Azure.Subscription.NonProdEnterprise: "codebuilddeploy-terraform-non-prod"
   Azure.Subscription.Prod: "codebuilddeploy-terraform"
 
-  Tf.State.NonProd.RG: "cbd-tfstate-rg"
-  Tf.State.NonProd.SA: "tfstatecbdnpd"
-  Tf.State.NonProd.Blob: 'tfstate-codebuilddeploy-blobc'
+  Tf.State.NonProdEnterprise.RG: "cbd-enterprise-tfstate-rg"
+  Tf.State.NonProdEnterprise.SA: "tfstatecbdent"
+  Tf.State.NonProdEnterprise.Blob: 'cbd-enterprise-tfstate-blobc'
+  Tf.State.Prod.RG: "cbd-prod-tfstate-rg"
+  Tf.State.Prod.SA: "tfstatecbdpd"
+  Tf.State.Prod.Blob: 'cbd-prod-tfstate-blobc'

@@ -79,57 +79,57 @@ stages:
 
 - ${{ if eq(variables['deploy.nonprod'], 'true') }}:
   - stage: Provision_NonProd
-    displayName: Provision NonProd Infra
+    displayName: Provision NonProd Platform
     dependsOn:
       - Build
     jobs:
-    - job: Init_TFState
-      displayName: Init NonProd TFState
+    - job: Init_NonProdEnterprise_TFState
+      displayName: Init NonProdEnterprise TFState
       steps:
       - template: create-tfstate-storage.yml
         parameters:
           location: 'uksouth'
-          service_connection: $(Azure.Subscription.NonProd)
-          resource_group_name: $(Tf.State.NonProd.RG)
-          storage_account_name: $(Tf.State.NonProd.SA)
-          container_blob_name: $(Tf.State.NonProd.Blob)
+          service_connection: $(Azure.Subscription.NonProdEnterprise)
+          resource_group_name: $(Tf.State.NonProdEnterprise.RG)
+          storage_account_name: $(Tf.State.NonProdEnterprise.SA)
+          container_blob_name: $(Tf.State.NonProdEnterprise.Blob)
 
-    - deployment: Provision_Platform_Global
-      displayName: Provision Global Platform
-      environment: Global
+    - deployment: Provision_NonProdEnterprise_Subscription
+      displayName: Provision Enterprise Subscription
+      environment: Subscription-NonProdEnterprise
       dependsOn:
-        - Init_TFState
+        - Init_NonProdEnterprise_TFState
       strategy:
         runOnce:
           deploy:
             steps:
             - template: template-terraform.yml
               parameters: 
-                service_connection: '$(Azure.Subscription.NonProd)'
-                terraform_work_directory: '$(Build.SourcesDirectory)/terraform/global'
-                tfstate_rg_name: $(Tf.State.NonProd.RG)
-                tfstate_storage_account_name: $(Tf.State.NonProd.SA)
-                tfstate_blob_name: $(Tf.State.NonProd.Blob)
-                tfstate_file_name: 'global'
-                spoke_vars_file_name: 'global'
+                service_connection: '$(Azure.Subscription.NonProdEnterprise)'
+                terraform_work_directory: '$(Build.SourcesDirectory)/terraform/subscription'
+                tfstate_rg_name: $(Tf.State.NonProdEnterprise.RG)
+                tfstate_storage_account_name: $(Tf.State.NonProdEnterprise.SA)
+                tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
+                tfstate_file_name: 'enterprise'
+                spoke_vars_file_name: 'enterprise'
                 additional_command_options: ''
 
     - deployment: Provision_Platform_NonProd
       displayName: Provision NonProd Platform
       environment: NonProd
       dependsOn:
-        - Provision_Platform_Global
+        - Provision_NonProdEnterprise_Subscription
       strategy:
         runOnce:
           deploy:
             steps:
             - template: template-terraform.yml
               parameters: 
-                service_connection: '$(Azure.Subscription.NonProd)'
-                terraform_work_directory: '$(Build.SourcesDirectory)/terraform/platform_env'
-                tfstate_rg_name: $(Tf.State.NonProd.RG)
-                tfstate_storage_account_name: $(Tf.State.NonProd.SA)
-                tfstate_blob_name: $(Tf.State.NonProd.Blob)
+                service_connection: '$(Azure.Subscription.NonProdEnterprise)'
+                terraform_work_directory: '$(Build.SourcesDirectory)/terraform/environment'
+                tfstate_rg_name: $(Tf.State.NonProdEnterprise.RG)
+                tfstate_storage_account_name: $(Tf.State.NonProdEnterprise.SA)
+                tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
                 tfstate_file_name: 'nonprod'
                 spoke_vars_file_name: 'nonprod'
-                additional_command_options: '-var="platform_env=nonprod"'
+                additional_command_options: ''

@@ -1,0 +1,548 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "applicationGateways_cbd_global_appgateway_name": {
+            "defaultValue": "cbd-global-appgateway",
+            "type": "String"
+        },
+        "virtualNetworks_cbd_global_vnet_externalid": {
+            "defaultValue": "/subscriptions/b170b9e9-4ea8-400d-9348-bff06abbba1e/resourceGroups/cbd-global-rg/providers/Microsoft.Network/virtualNetworks/cbd-global-vnet",
+            "type": "String"
+        },
+        "publicIPAddresses_cbd_global_appgateway_ip_externalid": {
+            "defaultValue": "/subscriptions/b170b9e9-4ea8-400d-9348-bff06abbba1e/resourceGroups/cbd-global-rg/providers/Microsoft.Network/publicIPAddresses/cbd-global-appgateway-ip",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/applicationGateways",
+            "apiVersion": "2023-11-01",
+            "name": "[parameters('applicationGateways_cbd_global_appgateway_name')]",
+            "location": "uksouth",
+            "tags": {
+                "managed-by-k8s-ingress": "1.7.4/3f62f1aa/2024-04-04-17:54T+0000",
+                "product": "CodeBuildDeploy"
+            },
+            "zones": [
+                "2",
+                "3",
+                "1"
+            ],
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/b170b9e9-4ea8-400d-9348-bff06abbba1e/resourcegroups/cbd-global-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cbd-global-agw-identity": {}
+                }
+            },
+            "properties": {
+                "sku": {
+                    "name": "Standard_v2",
+                    "tier": "Standard_v2",
+                    "family": "Generation_2"
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "[concat(parameters('applicationGateways_cbd_global_appgateway_name'), '-ip-config')]",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/gatewayIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-ip-config'))]",
+                        "properties": {
+                            "subnet": {
+                                "id": "[concat(parameters('virtualNetworks_cbd_global_vnet_externalid'), concat('/subnets/', parameters('applicationGateways_cbd_global_appgateway_name'), '-subnet'))]"
+                            }
+                        }
+                    }
+                ],
+                "sslCertificates": [
+                    {
+                        "name": "[concat(parameters('applicationGateways_cbd_global_appgateway_name'), '-ssl-cert')]",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/sslCertificates/', parameters('applicationGateways_cbd_global_appgateway_name'), '-ssl-cert'))]",
+                        "properties": {
+                            "keyVaultSecretId": "https://cbd-enterprise-kv.vault.azure.net/secrets/codebuilddeploy-cert-pfx/4da0840682ab4cc8aacf85aa2fd525b6"
+                        }
+                    }
+                ],
+                "trustedRootCertificates": [],
+                "trustedClientCertificates": [],
+                "sslProfiles": [],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[concat(parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip')]",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip'))]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[parameters('publicIPAddresses_cbd_global_appgateway_ip_externalid')]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "[concat(parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-port')]",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendPorts/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-port'))]",
+                        "properties": {
+                            "port": 443
+                        }
+                    },
+                    {
+                        "name": "fp-80",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/frontendPorts/fp-80')]",
+                        "properties": {
+                            "port": 80
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "pool-cbd-nonprod-dev-dev-codebuilddeploy-80-bp-8080",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-80-bp-8080')]",
+                        "properties": {
+                            "backendAddresses": [
+                                {
+                                    "ipAddress": "10.0.2.8"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080')]",
+                        "properties": {
+                            "backendAddresses": [
+                                {
+                                    "ipAddress": "10.0.2.16"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "loadDistributionPolicies": [],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "bp-cbd-nonprod-dev-dev-codebuilddeploy-80-8080-dev-codebuilddeploy",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-80-8080-dev-codebuilddeploy')]",
+                        "properties": {
+                            "port": 8080,
+                            "protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 30,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/probes/pb-cbd-nonprod-dev-dev-codebuilddeploy-80-dev-codebuilddeploy')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs')]",
+                        "properties": {
+                            "port": 8080,
+                            "protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 30,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/probes/pb-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-dev-codebuilddeploy-blogs')]"
+                            }
+                        }
+                    }
+                ],
+                "backendSettingsCollection": [],
+                "httpListeners": [
+                    {
+                        "name": "fl-3c278069cc4ae8bcac84d90ae05c1873",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-3c278069cc4ae8bcac84d90ae05c1873')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip'))]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/frontendPorts/fp-80')]"
+                            },
+                            "protocol": "Http",
+                            "hostNames": [
+                                "dev.codebuilddeploy.co.uk"
+                            ],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "fl-45f1014f121e9edeca1caee0cf52089b",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-45f1014f121e9edeca1caee0cf52089b')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip'))]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendPorts/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-port'))]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/sslCertificates/', parameters('applicationGateways_cbd_global_appgateway_name'), '-ssl-cert'))]"
+                            },
+                            "hostNames": [
+                                "dev.codebuilddeploy.com"
+                            ],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "fl-f3183bd74d3a4ae53abe43eb3cd88abd",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-f3183bd74d3a4ae53abe43eb3cd88abd')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip'))]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendPorts/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-port'))]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/sslCertificates/', parameters('applicationGateways_cbd_global_appgateway_name'), '-ssl-cert'))]"
+                            },
+                            "hostNames": [
+                                "dev.codebuilddeploy.co.uk"
+                            ],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "fl-f44f665cd9c5a0687c6cca0894481606",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-f44f665cd9c5a0687c6cca0894481606')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), concat('/frontendIPConfigurations/', parameters('applicationGateways_cbd_global_appgateway_name'), '-fe-ip'))]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/frontendPorts/fp-80')]"
+                            },
+                            "protocol": "Http",
+                            "hostNames": [
+                                "dev.codebuilddeploy.com"
+                            ],
+                            "requireServerNameIndication": false
+                        }
+                    }
+                ],
+                "listeners": [],
+                "urlPathMaps": [
+                    {
+                        "name": "url-3c278069cc4ae8bcac84d90ae05c1873",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873')]",
+                        "properties": {
+                            "defaultRedirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                            },
+                            "pathRules": [
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-0",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-0')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/api/blog*"
+                                        ],
+                                        "redirectConfiguration": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-1",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-1')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/swagger/blog*"
+                                        ],
+                                        "redirectConfiguration": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "url-45f1014f121e9edeca1caee0cf52089b",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-45f1014f121e9edeca1caee0cf52089b')]",
+                        "properties": {
+                            "defaultBackendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-80-bp-8080')]"
+                            },
+                            "defaultBackendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-80-8080-dev-codebuilddeploy')]"
+                            },
+                            "pathRules": [
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-0",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-45f1014f121e9edeca1caee0cf52089b/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-0')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/api/blog*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs')]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-1",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-45f1014f121e9edeca1caee0cf52089b/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-1')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/swagger/blog*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs')]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "url-f3183bd74d3a4ae53abe43eb3cd88abd",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f3183bd74d3a4ae53abe43eb3cd88abd')]",
+                        "properties": {
+                            "defaultBackendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-80-bp-8080')]"
+                            },
+                            "defaultBackendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-80-8080-dev-codebuilddeploy')]"
+                            },
+                            "pathRules": [
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-0",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f3183bd74d3a4ae53abe43eb3cd88abd/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-0')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/api/blog*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs')]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-1",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f3183bd74d3a4ae53abe43eb3cd88abd/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-1')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/swagger/blog*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendAddressPools/pool-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-bp-8080')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/backendHttpSettingsCollection/bp-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-8080-dev-codebuilddeploy-blogs')]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "url-f44f665cd9c5a0687c6cca0894481606",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606')]",
+                        "properties": {
+                            "defaultRedirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-45f1014f121e9edeca1caee0cf52089b')]"
+                            },
+                            "pathRules": [
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-0",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-0')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/api/blog*"
+                                        ],
+                                        "redirectConfiguration": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-45f1014f121e9edeca1caee0cf52089b')]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-1",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-1')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/swagger/blog*"
+                                        ],
+                                        "redirectConfiguration": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-45f1014f121e9edeca1caee0cf52089b')]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "requestRoutingRules": [
+                    {
+                        "name": "rr-3c278069cc4ae8bcac84d90ae05c1873",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/requestRoutingRules/rr-3c278069cc4ae8bcac84d90ae05c1873')]",
+                        "properties": {
+                            "ruleType": "PathBasedRouting",
+                            "priority": 19000,
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-3c278069cc4ae8bcac84d90ae05c1873')]"
+                            },
+                            "urlPathMap": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "rr-45f1014f121e9edeca1caee0cf52089b",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/requestRoutingRules/rr-45f1014f121e9edeca1caee0cf52089b')]",
+                        "properties": {
+                            "ruleType": "PathBasedRouting",
+                            "priority": 19005,
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-45f1014f121e9edeca1caee0cf52089b')]"
+                            },
+                            "urlPathMap": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-45f1014f121e9edeca1caee0cf52089b')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "rr-f3183bd74d3a4ae53abe43eb3cd88abd",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/requestRoutingRules/rr-f3183bd74d3a4ae53abe43eb3cd88abd')]",
+                        "properties": {
+                            "ruleType": "PathBasedRouting",
+                            "priority": 19010,
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                            },
+                            "urlPathMap": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "rr-f44f665cd9c5a0687c6cca0894481606",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/requestRoutingRules/rr-f44f665cd9c5a0687c6cca0894481606')]",
+                        "properties": {
+                            "ruleType": "PathBasedRouting",
+                            "priority": 19015,
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-f44f665cd9c5a0687c6cca0894481606')]"
+                            },
+                            "urlPathMap": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606')]"
+                            }
+                        }
+                    }
+                ],
+                "routingRules": [],
+                "probes": [
+                    {
+                        "name": "pb-cbd-nonprod-dev-dev-codebuilddeploy-80-dev-codebuilddeploy",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/probes/pb-cbd-nonprod-dev-dev-codebuilddeploy-80-dev-codebuilddeploy')]",
+                        "properties": {
+                            "protocol": "Http",
+                            "host": "dev.codebuilddeploy.com",
+                            "path": "/v1/healthcheck",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": false,
+                            "minServers": 0,
+                            "match": {}
+                        }
+                    },
+                    {
+                        "name": "pb-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-dev-codebuilddeploy-blogs",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/probes/pb-cbd-nonprod-dev-dev-codebuilddeploy-blogs-80-dev-codebuilddeploy-blogs')]",
+                        "properties": {
+                            "protocol": "Http",
+                            "host": "dev.codebuilddeploy.co.uk",
+                            "path": "/v1/healthcheck",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": false,
+                            "minServers": 0,
+                            "match": {}
+                        }
+                    }
+                ],
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [
+                    {
+                        "name": "sslr-fl-45f1014f121e9edeca1caee0cf52089b",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-45f1014f121e9edeca1caee0cf52089b')]",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-45f1014f121e9edeca1caee0cf52089b')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "urlPathMaps": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606')]"
+                                }
+                            ],
+                            "pathRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-0')]"
+                                },
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-f44f665cd9c5a0687c6cca0894481606/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-1-path-1')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sslr-fl-f3183bd74d3a4ae53abe43eb3cd88abd",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/redirectConfigurations/sslr-fl-f3183bd74d3a4ae53abe43eb3cd88abd')]",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/httpListeners/fl-f3183bd74d3a4ae53abe43eb3cd88abd')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "urlPathMaps": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873')]"
+                                }
+                            ],
+                            "pathRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-0')]"
+                                },
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_cbd_global_appgateway_name')), '/urlPathMaps/url-3c278069cc4ae8bcac84d90ae05c1873/pathRules/pr-cbd-nonprod-dev-dev-codebuilddeploy-blogs-rule-0-path-1')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "privateLinkConfigurations": [],
+                "sslPolicy": {
+                    "policyType": "Predefined",
+                    "policyName": "AppGwSslPolicy20150501"
+                },
+                "enableHttp2": true,
+                "autoscaleConfiguration": {
+                    "minCapacity": 0,
+                    "maxCapacity": 2
+                },
+                "customErrorConfigurations": []
+            }
+        }
+    ]
+}

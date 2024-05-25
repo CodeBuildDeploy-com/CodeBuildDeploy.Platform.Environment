@@ -14,15 +14,19 @@ parameters:
     default: false
 
 resources:
-- repo: self
+  repositories:
+  - repository: self
+  - repository: platformSubscription
+    type: git
+    name: 'CodeBuildDeploy.Platform.Subscription'
 
 variables:
 # Group variables
 - group: CodeBuildDeploy-Global
 
-- template: variables-infrastructure.yml
+- template: azureDevOps/variables-infrastructure.yml@platformSubscription
 
-- template: variables-build.yml
+- template: azureDevOps/variables-build.yml@platformSubscription
 - template: variables-env.yml
   parameters:
     isManual: ${{ variables['build.type.manual'] }}
@@ -30,7 +34,7 @@ variables:
     deployNonProd: ${{ parameters.deployNonProd }}
 
 # Versioning
-- template: variables-versioning.yml
+- template: azureDevOps/variables-versioning.yml@platformSubscription
   parameters:
     buildTypeRelease: ${{ variables['build.type.release'] }}
     majorVersion: 1
@@ -77,47 +81,11 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         displayName: Tag Version in Git
 
-- stage: Provision_NonProdEnterprise_Subscription
-  displayName: Provision NonProd Enterprise Subscription
-  dependsOn:
-    - Build
-  jobs:
-  - job: Init_NonProdEnterprise_TFState
-    displayName: Init NonProdEnterprise TFState
-    steps:
-    - template: create-tfstate-storage.yml
-      parameters:
-        location: 'uksouth'
-        service_connection: $(Azure.Subscription.NonProdEnterprise)
-        resource_group_name: $(Tf.State.NonProdEnterprise.RG)
-        storage_account_name: $(Tf.State.NonProdEnterprise.SA)
-        container_blob_name: $(Tf.State.NonProdEnterprise.Blob)
-
-  - deployment: Provision_NonProdEnterprise_Platform
-    displayName: Provision NonProdEnterprise Platform
-    environment: Subscription-NonProdEnterprise
-    dependsOn:
-      - Init_NonProdEnterprise_TFState
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - template: template-terraform.yml
-            parameters: 
-              service_connection: '$(Azure.Subscription.NonProdEnterprise)'
-              terraform_work_directory: '$(Build.SourcesDirectory)/terraform/subscription'
-              tfstate_rg_name: $(Tf.State.NonProdEnterprise.RG)
-              tfstate_storage_account_name: $(Tf.State.NonProdEnterprise.SA)
-              tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
-              tfstate_file_name: 'enterprise'
-              spoke_vars_file_name: 'enterprise'
-              additional_command_options: ''
-
 - ${{ if eq(variables['deploy.nonprod'], 'true') }}:
   - stage: Provision_NonProd
     displayName: Provision NonProd Platform
     dependsOn:
-      - Provision_NonProdEnterprise_Subscription
+      - Build
     jobs:
     - deployment: Provision_Platform_NonProd
       displayName: Provision NonProd Platform
@@ -126,10 +94,10 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: template-terraform.yml
+            - template: azureDevOps/template-terraform.yml@platformSubscription
               parameters: 
                 service_connection: '$(Azure.Subscription.NonProdEnterprise)'
-                terraform_work_directory: '$(Build.SourcesDirectory)/terraform/environment'
+                terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
                 tfstate_rg_name: $(Tf.State.NonProdEnterprise.RG)
                 tfstate_storage_account_name: $(Tf.State.NonProdEnterprise.SA)
                 tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
@@ -138,46 +106,11 @@ stages:
                 additional_command_options: ''
             
   - ${{ if eq(variables['deploy.prod'], 'true') }}:
-    - stage: Provision_ProdPremium_Subscription
-      displayName: Provision Production Premium Subscription
-      dependsOn:
-        - Provision_NonProd
-      jobs:
-      - job: Init_ProdPremium_TFState
-        displayName: Init ProdPremium TFState
-        steps:
-        - template: create-tfstate-storage.yml
-          parameters:
-            location: 'uksouth'
-            service_connection: $(Azure.Subscription.ProdPremium)
-            resource_group_name: $(Tf.State.ProdPremium.RG)
-            storage_account_name: $(Tf.State.ProdPremium.SA)
-            container_blob_name: $(Tf.State.ProdPremium.Blob)
-
-      - deployment: Provision_ProdPremium_Platform
-        displayName: Provision ProdPremium Platform
-        environment: Subscription-ProdPremium
-        dependsOn:
-          - Init_ProdPremium_TFState
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - template: template-terraform.yml
-                parameters: 
-                  service_connection: '$(Azure.Subscription.ProdPremium)'
-                  terraform_work_directory: '$(Build.SourcesDirectory)/terraform/subscription'
-                  tfstate_rg_name: $(Tf.State.ProdPremium.RG)
-                  tfstate_storage_account_name: $(Tf.State.ProdPremium.SA)
-                  tfstate_blob_name: $(Tf.State.ProdPremium.Blob)
-                  tfstate_file_name: 'premium'
-                  spoke_vars_file_name: 'premium'
-                  additional_command_options: ''
 
     - stage: Provision_Prod
       displayName: Provision Prod Platform
       dependsOn:
-        - Provision_ProdPremium_Subscription
+        - Provision_NonProd
       jobs:
       - deployment: Provision_Platform_Prod
         displayName: Provision Prod Platform
@@ -186,10 +119,10 @@ stages:
           runOnce:
             deploy:
               steps:
-              - template: template-terraform.yml
+              - template: azureDevOps/template-terraform.yml@platformSubscription
                 parameters: 
                   service_connection: '$(Azure.Subscription.ProdPremium)'
-                  terraform_work_directory: '$(Build.SourcesDirectory)/terraform/environment'
+                  terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
                   tfstate_rg_name: $(Tf.State.ProdPremium.RG)
                   tfstate_storage_account_name: $(Tf.State.ProdPremium.SA)
                   tfstate_blob_name: $(Tf.State.ProdPremium.Blob)

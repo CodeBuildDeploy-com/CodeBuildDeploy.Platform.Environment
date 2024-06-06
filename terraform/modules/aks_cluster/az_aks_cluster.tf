@@ -72,9 +72,9 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     }
   }
 
-  oms_agent {
-    log_analytics_workspace_id = data.azurerm_log_analytics_workspace.cbd_plat_law.id
-  }
+  #oms_agent {
+  #  log_analytics_workspace_id = data.azurerm_log_analytics_workspace.cbd_plat_law.id
+  #}
 
   network_profile {
     network_plugin    = "azure"

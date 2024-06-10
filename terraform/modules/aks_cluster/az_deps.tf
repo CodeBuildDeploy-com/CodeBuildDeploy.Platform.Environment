@@ -18,10 +18,10 @@ data "azurerm_resource_group" "cbd_plat_rg" {
   name = "cbd-${var.platform_env}-rg"
 }
 
-data "azurerm_log_analytics_workspace" "cbd_plat_law" {
-  name                = "cbd-${var.platform_env}-law"
-  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
-}
+#data "azurerm_log_analytics_workspace" "cbd_plat_law" {
+#  name                = "cbd-${var.platform_env}-law"
+#  resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
+#}
 
 data "azurerm_virtual_network" "cbd_plat_vnet" {
   name                = "cbd-${var.platform_env}-vnet"

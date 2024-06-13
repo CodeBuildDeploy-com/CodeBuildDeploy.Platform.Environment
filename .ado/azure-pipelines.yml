@@ -17,16 +17,17 @@ resources:
   repositories:
   - repository: self
   - repository: platformSubscription
-    type: git
-    name: 'CodeBuildDeploy.Platform.Subscription'
+    type: github
+    endpoint: 'CodeBuildDeploy-com'
+    name: 'CodeBuildDeploy-com/CodeBuildDeploy.Platform.Subscription'
 
 variables:
 # Group variables
 - group: CodeBuildDeploy-Global
 
-- template: azureDevOps/variables-infrastructure.yml@platformSubscription
+- template: .ado/variables-infrastructure.yml@platformSubscription
 
-- template: azureDevOps/variables-build.yml@platformSubscription
+- template: .ado/variables-build.yml@platformSubscription
 - template: variables-env.yml
   parameters:
     isManual: ${{ variables['build.type.manual'] }}
@@ -34,7 +35,7 @@ variables:
     deployNonProd: ${{ parameters.deployNonProd }}
 
 # Versioning
-- template: azureDevOps/variables-versioning.yml@platformSubscription
+- template: .ado/variables-versioning.yml@platformSubscription
   parameters:
     buildTypeRelease: ${{ variables['build.type.release'] }}
     majorVersion: 1
@@ -94,7 +95,7 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: azureDevOps/template-terraform.yml@platformSubscription
+            - template: .ado/template-terraform.yml@platformSubscription
               parameters: 
                 service_connection: '$(Azure.Subscription.NonProdEnterprise)'
                 terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
@@ -119,7 +120,7 @@ stages:
           runOnce:
             deploy:
               steps:
-              - template: azureDevOps/template-terraform.yml@platformSubscription
+              - template: .ado/template-terraform.yml@platformSubscription
                 parameters: 
                   service_connection: '$(Azure.Subscription.ProdPremium)'
                   terraform_work_directory: '$(Build.SourcesDirectory)/terraform'

@@ -1,7 +1,7 @@
 # Introduction 
 Repository for provisioning the CodeBuildDeploy environment platform in Azure
 
-# azureDevOps
+# .ado
 This folder contains the Azure DevOps (ADO) pipelines
 
 # terraform

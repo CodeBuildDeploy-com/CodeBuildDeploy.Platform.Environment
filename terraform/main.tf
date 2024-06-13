@@ -1,7 +1,7 @@
 module "cbd_plat_core_resources" {
   source = "./modules/core_resources"
 
-  subscription_short_name        = var.subscription_short_name
+  subscription_friendly_name     = var.subscription_friendly_name
   platform_env                   = var.platform_env
   address_prefixes_platform_vnet = var.address_prefixes_platform_vnet
 }
@@ -10,7 +10,7 @@ module "cbd_plat_bastion" {
   depends_on = [module.cbd_plat_core_resources]
   source     = "./modules/bastion"
 
-  subscription_short_name         = var.subscription_short_name
+  subscription_friendly_name      = var.subscription_friendly_name
   platform_env                    = var.platform_env
   address_prefixes_bastion_subnet = var.address_prefixes_bastion_subnet
 }
@@ -19,8 +19,8 @@ module "cbd_plat_container_registry" {
   depends_on = [module.cbd_plat_core_resources]
   source     = "./modules/container_registry"
 
-  subscription_short_name = var.subscription_short_name
-  platform_env            = var.platform_env
+  subscription_friendly_name = var.subscription_friendly_name
+  platform_env               = var.platform_env
 }
 
 #module "cbd_plat_app_gateway" {
@@ -36,7 +36,7 @@ module "cbd_plat_aks_cluster" {
 #  depends_on = [module.cbd_plat_app_gateway]
   source     = "./modules/aks_cluster"
  
-  subscription_short_name     = var.subscription_short_name
+  subscription_friendly_name  = var.subscription_friendly_name
   platform_env                = var.platform_env
   address_prefixes_aks_subnet = var.address_prefixes_aks_subnet
   aks_service_cidr            = var.aks_service_cidr
@@ -50,7 +50,7 @@ module "cbd_plat_aks_cluster_configure" {
   depends_on = [module.cbd_plat_aks_cluster]
   source     = "./modules/aks_cluster_configure"
  
-  subscription_short_name     = var.subscription_short_name
+  subscription_friendly_name  = var.subscription_friendly_name
   platform_env                = var.platform_env
   container_registry          = var.container_registry
   container_registry_username = var.container_registry_username
@@ -60,7 +60,7 @@ module "cbd_plat_sql_server" {
   depends_on = [module.cbd_plat_core_resources]
   source     = "./modules/sql_server"
  
-  subscription_short_name       = var.subscription_short_name
+  subscription_friendly_name    = var.subscription_friendly_name
   platform_env                  = var.platform_env
   address_prefixes_sqldb_subnet = var.address_prefixes_sqldb_subnet
 }

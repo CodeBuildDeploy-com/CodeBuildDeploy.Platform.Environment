@@ -42,11 +42,11 @@ data "azuread_service_principal" "current" {
 }
 
 data "azurerm_resource_group" "cbd_subscription_rg" {
-  name = "cbd-${var.subscription_short_name}-rg"
+  name = "cbd-${var.subscription_friendly_name}-rg"
 }
 
 data "azurerm_key_vault" "cbd_subscription_kv" {
-  name                = "cbd-${var.subscription_short_name}-kv"
+  name                = "cbd-${var.subscription_friendly_name}-kv"
   resource_group_name = data.azurerm_resource_group.cbd_subscription_rg.name
 }
 

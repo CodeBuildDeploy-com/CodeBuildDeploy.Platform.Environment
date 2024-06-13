@@ -1,6 +1,6 @@
-subscription_short_name = "premium"
-platform_env            = "prod"
-default_location        = "uksouth"
+subscription_friendly_name = "premium"
+platform_env               = "prod"
+default_location           = "uksouth"
 
 address_prefixes_platform_vnet     = ["10.0.2.0/24"]
 address_prefixes_appgateway_subnet = ["10.0.2.0/26"]

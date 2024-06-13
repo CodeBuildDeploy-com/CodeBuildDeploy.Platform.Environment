@@ -10,7 +10,7 @@ variable "default_location" {
   default     = "uksouth"
 }
 
-variable "subscription_short_name" {
+variable "subscription_friendly_name" {
   type        = string
   description = "This variable is a short name version of the subscription being used for the platform"
 }

@@ -46,7 +46,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     orchestrator_version = data.azurerm_kubernetes_service_versions.current.latest_version
     #orchestrator_version = "v20250519"
     zones                = [1, 2, 3]
-    #enable_auto_scaling  = true
+    enable_auto_scaling  = true
     max_count            = var.aks_system_pool_max_count
     min_count            = var.aks_system_pool_min_count
     os_disk_size_gb      = 30

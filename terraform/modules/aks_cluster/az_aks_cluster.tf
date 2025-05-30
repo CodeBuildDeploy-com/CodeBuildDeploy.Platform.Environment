@@ -18,7 +18,7 @@ data "azurerm_kubernetes_service_versions" "current" {
 }
 
 output "latest_version" {
-  value = data.azurerm_kubernetes_service_versions.current.default_version
+  value = data.azurerm_kubernetes_service_versions.current.latest_version
 }
 
 # Create AKS Cluster
@@ -35,14 +35,16 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   }
 
   dns_prefix                        = "cbd-${var.platform_env}-aks-cluster"
-  kubernetes_version                = data.azurerm_kubernetes_service_versions.current.default_version
+  #kubernetes_version                = data.azurerm_kubernetes_service_versions.current.latest_version
+  kubernetes_version                = "v20250519"
   node_resource_group               = "cbd-${var.platform_env}-nrg"
   role_based_access_control_enabled = true
 
   default_node_pool {
     name                 = "systempool"
     vm_size              = var.aks_system_pool_vm_size
-    orchestrator_version = data.azurerm_kubernetes_service_versions.current.default_version
+    #orchestrator_version = data.azurerm_kubernetes_service_versions.current.latest_version
+    orchestrator_version = "v20250519"
     zones                = [1, 2, 3]
     #enable_auto_scaling  = true
     max_count            = var.aks_system_pool_max_count
@@ -117,7 +119,7 @@ output "aks_cluster_kubernetes_version" {
 #resource "azurerm_kubernetes_cluster_node_pool" "cbd_plat_aks_cluster_nodepool1" {
 #  name                  = "nodepool1"
 #  vm_size               = "Standard_D2_v3"
-#  orchestrator_version  = data.azurerm_kubernetes_service_versions.current.default_version
+#  orchestrator_version  = data.azurerm_kubernetes_service_versions.current.latest_version
 #  kubernetes_cluster_id = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.id
 #  vnet_subnet_id        = azurerm_subnet.cbd_plat_subnet_aks.id
 #  zones                 = [1, 2, 3]

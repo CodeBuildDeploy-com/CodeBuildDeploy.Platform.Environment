@@ -92,7 +92,6 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   # RBAC and Azure AD Integration Block
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
-    managed                = true
   }
 
   #ingress_application_gateway {

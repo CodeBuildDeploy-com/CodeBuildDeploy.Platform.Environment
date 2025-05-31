@@ -92,7 +92,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   # RBAC and Azure AD Integration Block
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
-    admin_group_object_ids = [data.azuread_group.cbd_sub_aks_administrators.object_id]
+    admin_group_object_ids = [data.azurerm_client_config.current.object_id, data.azuread_group.cbd_sub_aks_administrators.object_id]
   }
 
   #ingress_application_gateway {

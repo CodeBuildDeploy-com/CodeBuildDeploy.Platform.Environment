@@ -36,7 +36,6 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
 
   dns_prefix                        = "cbd-${var.platform_env}-aks-cluster"
   kubernetes_version                = data.azurerm_kubernetes_service_versions.current.latest_version
-  #kubernetes_version                = "v20250519"
   node_resource_group               = "cbd-${var.platform_env}-nrg"
   role_based_access_control_enabled = true
 
@@ -44,9 +43,8 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     name                 = "systempool"
     vm_size              = var.aks_system_pool_vm_size
     orchestrator_version = data.azurerm_kubernetes_service_versions.current.latest_version
-    #orchestrator_version = "v20250519"
     zones                = [1, 2, 3]
-    #enable_auto_scaling  = true
+    auto_scaling_enabled = true
     max_count            = var.aks_system_pool_max_count
     min_count            = var.aks_system_pool_min_count
     os_disk_size_gb      = 30
@@ -94,8 +92,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   # RBAC and Azure AD Integration Block
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
-    #admin_group_object_ids = [data.azurerm_client_config.current.object_id]
-    #managed                = true
+    admin_group_object_ids = [data.azuread_group.cbd_sub_aks_administrators.object_id]
   }
 
   #ingress_application_gateway {

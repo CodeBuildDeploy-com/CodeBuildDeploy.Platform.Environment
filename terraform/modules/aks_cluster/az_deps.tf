@@ -9,6 +9,10 @@ data "azurerm_key_vault" "cbd_subscription_kv" {
   resource_group_name = data.azurerm_resource_group.cbd_subscription_rg.name
 }
 
+data "azuread_group" "cbd_sub_aks_administrators" {
+  display_name     = "cbd-${var.subscription_friendly_name}-aks-administrators"
+}
+
 data "azurerm_key_vault_secret" "cbd_plat_aks_ssh_key" {
   name         = "cbd-${var.platform_env}-aks-ssh-key"
   key_vault_id = data.azurerm_key_vault.cbd_subscription_kv.id

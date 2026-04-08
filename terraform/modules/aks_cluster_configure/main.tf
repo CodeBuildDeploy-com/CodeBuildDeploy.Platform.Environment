@@ -33,14 +33,13 @@ resource "helm_release" "cbd_plat_helm_nginx" {
   namespace        = "ingress-nginx"
   create_namespace = true
 
-  set = [
-    {
-      name  = "controller.service.annotations.\"service\\.beta\\.kubernetes\\.io/azure-load-balancer-health-probe-request-path\""
-      value = "/healthz"
-    },
-    {
-      name  = "controller.service.externalTrafficPolicy"
-      value = "Local"
-    }
-  ]
+  set {
+    name  = "controller.service.annotations.\"service\\.beta\\.kubernetes\\.io/azure-load-balancer-health-probe-request-path\""
+    value = "/healthz"
+  }
+
+  set {
+    name  = "controller.service.externalTrafficPolicy"
+    value = "Local"
+  }
 }

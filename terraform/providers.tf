@@ -18,15 +18,15 @@ terraform {
       version = "~> 3.6.1"
     }
     #https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
-    #kubernetes = {
-    #  source  = "hashicorp/kubernetes"
-    #  version = "~> 2.37.1"
-    #}
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.37.1"
+    }
     #https://registry.terraform.io/providers/hashicorp/helm/latest/docs
-    #helm = {
-    #  source  = "hashicorp/helm"
-    #  version = "~> 2.17.0"
-    #}
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.17.0"
+    }
   }
 
   backend "azurerm" { }
@@ -105,11 +105,11 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = data.azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.host
     cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.cluster_ca_certificate)
 
-    exec = {
+    exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"
       args = [

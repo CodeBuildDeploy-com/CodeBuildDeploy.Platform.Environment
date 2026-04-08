@@ -109,7 +109,7 @@ provider "helm" {
     host                   = data.azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.host
     cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.cluster_ca_certificate)
 
-    exec {
+    exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"
       args = [

@@ -95,6 +95,10 @@ stages:
         runOnce:
           deploy:
             steps:
+            - template: .ado/template-terraform-kube-prepare.yml
+              parameters: 
+                service_connection: '$(Azure.Subscription.NonProdEnterprise)'
+                terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
             - template: .ado/template-terraform.yml@subplatform
               parameters: 
                 service_connection: '$(Azure.Subscription.NonProdEnterprise)'
@@ -107,7 +111,6 @@ stages:
                 additional_command_options: ''
             
   - ${{ if eq(variables['deploy.prod'], 'true') }}:
-
     - stage: Provision_Prod
       displayName: Provision Prod Platform
       dependsOn:
@@ -120,6 +123,10 @@ stages:
           runOnce:
             deploy:
               steps:
+              - template: .ado/template-terraform-kube-prepare.yml
+                parameters: 
+                  service_connection: '$(Azure.Subscription.ProdPremium)'
+                  terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
               - template: .ado/template-terraform.yml@subplatform
                 parameters: 
                   service_connection: '$(Azure.Subscription.ProdPremium)'

@@ -101,7 +101,7 @@ provider "kubernetes" {
       "--tenant-id",
       data.azurerm_client_config.current.tenant_id,
       "--client-id",
-      data.azuread_service_principal.current.application_id,
+      data.azuread_service_principal.current.client_id,
       "--client-certificate",
       "${path.cwd}/terraform-cert.pem"
     ]
@@ -127,7 +127,7 @@ provider "helm" {
         "--tenant-id",
         data.azurerm_client_config.current.tenant_id,
         "--client-id",
-        data.azuread_service_principal.current.application_id,
+        data.azuread_service_principal.current.client_id,
         "--client-certificate",
         "${path.cwd}/terraform-cert.pem"
       ]

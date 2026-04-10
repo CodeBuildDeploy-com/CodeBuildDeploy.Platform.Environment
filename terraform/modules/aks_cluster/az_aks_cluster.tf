@@ -112,6 +112,12 @@ output "cbd_plat_aks_cluster_name" {
 output "aks_cluster_kubernetes_version" {
   value = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kubernetes_version
 }
+output "cbd_plat_aks_cluster_host" {
+  value = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.host
+}
+output "cbd_plat_aks_cluster_cluster_ca_certificate" {
+  value = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.kube_config.0.cluster_ca_certificate
+}
 
 #resource "azurerm_kubernetes_cluster_node_pool" "cbd_plat_aks_cluster_nodepool1" {
 #  name                  = "nodepool1"

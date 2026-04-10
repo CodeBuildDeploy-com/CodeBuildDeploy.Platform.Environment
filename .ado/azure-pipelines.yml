@@ -95,7 +95,7 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: .ado/template-terraform-kube-prepare.yml
+            - template: template-terraform-kube-prepare.yml
               parameters: 
                 service_connection: '$(Azure.Subscription.NonProdEnterprise)'
                 terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
@@ -123,7 +123,7 @@ stages:
           runOnce:
             deploy:
               steps:
-              - template: .ado/template-terraform-kube-prepare.yml
+              - template: template-terraform-kube-prepare.yml
                 parameters: 
                   service_connection: '$(Azure.Subscription.ProdPremium)'
                   terraform_work_directory: '$(Build.SourcesDirectory)/terraform'

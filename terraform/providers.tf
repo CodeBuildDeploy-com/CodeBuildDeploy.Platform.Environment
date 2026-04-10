@@ -104,7 +104,7 @@ provider "kubernetes" {
       "--client-id",
       data.azuread_service_principal.current.client_id,
       "--client-certificate",
-      base64decode(data.azurerm_key_vault_secret.cbd_global_terraform_user_certificate.value),
+      "terraform-cert.pem",
     ]
   }
 }
@@ -130,7 +130,7 @@ provider "helm" {
         "--client-id",
         data.azuread_service_principal.current.client_id,
         "--client-certificate",
-        base64decode(data.azurerm_key_vault_secret.cbd_global_terraform_user_certificate.value),
+        "terraform-cert.pem",
       ]
     }
   }

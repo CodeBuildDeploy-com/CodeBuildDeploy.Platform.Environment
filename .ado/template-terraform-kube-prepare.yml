@@ -31,3 +31,11 @@ steps:
   displayName: Install Kubelogin
   inputs:
     kubeloginVersion: '0.2.17'
+
+- bash: |
+    kubelogin get-token --login spn \
+      --server-id "6dae42f8-4368-4678-94ff-3960e28e3630" \
+      --tenant-id "9e2392bf-52d6-4e65-91e1-501f81075a49" \
+      --client-id "56c6492c-e72b-45da-a171-95bec2d4954b" \
+      --client-certificate "${{parameters.terraform_work_directory}}/terraform-cert.pem"
+  displayName: 'Verify Kubelogin works in Pipeline'

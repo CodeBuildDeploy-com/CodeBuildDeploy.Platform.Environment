@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.12.2"
+  required_version = ">= 1.14.8"
 
   required_providers {
     #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
@@ -20,12 +20,12 @@ terraform {
     #https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.38.0"
+      version = "~> 3.0.1"
     }
     #https://registry.terraform.io/providers/hashicorp/helm/latest/docs
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.17.0"
+      version = "~> 3.1.1"
     }
   }
 
@@ -109,11 +109,11 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = module.cbd_plat_aks_cluster.cbd_plat_aks_cluster_host
     cluster_ca_certificate = base64decode(module.cbd_plat_aks_cluster.cbd_plat_aks_cluster_cluster_ca_certificate)
 
-    exec {
+    exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"
       args = [

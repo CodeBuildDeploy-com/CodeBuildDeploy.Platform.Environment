@@ -127,7 +127,7 @@ provider "helm" {
         "--tenant-id",
         data.azurerm_client_config.current.tenant_id,
         "--client-id",
-        "56c6492c-e72b-45da-a171-95bec2d4954b",
+        data.azuread_service_principal.current.client_id,
         "--client-certificate",
         abspath("${path.cwd}/terraform-cert.pem")
       ]

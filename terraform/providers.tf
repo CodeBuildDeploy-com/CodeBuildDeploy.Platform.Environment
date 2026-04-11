@@ -103,7 +103,7 @@ provider "kubernetes" {
       "--client-id",
       data.azuread_service_principal.current.client_id,
       "--client-certificate",
-      abspath("${path.cwd}/terraform-cert.pem")
+      "/home/vsts/work/1/s/terraform/terraform-cert.pem"
     ]
   }
 }
@@ -129,7 +129,7 @@ provider "helm" {
         "--client-id",
         "56c6492c-e72b-45da-a171-95bec2d4954b",
         "--client-certificate",
-        abspath("${path.cwd}/terraform-cert.pem")
+        "/home/vsts/work/1/s/terraform/terraform-cert.pem"
       ]
     }
   }

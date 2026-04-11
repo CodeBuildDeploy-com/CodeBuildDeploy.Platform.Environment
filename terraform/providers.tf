@@ -88,6 +88,13 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.cbd_plat_aks_cluster.cbd_plat_aks_cluster_cluster_ca_certificate)
 
   exec {
+    env = {
+      "AAD_SERVICE_PRINCIPAL_CLIENT_ID"         = "56c6492c-e72b-45da-a171-95bec2d4954b"
+      "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE" = "/home/vsts/work/1/s/terraform/terraform-cert.pem"
+      "AZURE_TENANT_ID"                         = "9e2392bf-52d6-4e65-91e1-501f81075a49"
+      "ARM_CLIENT_SECRET"                       = "" # Scrub the secret that's causing the conflict
+    }
+    
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "kubelogin"
     args = [
@@ -100,7 +107,7 @@ provider "kubernetes" {
       "--login",
       "spn",
       "--tenant-id",
-      data.azurerm_client_config.current.tenant_id,
+      "9e2392bf-52d6-4e65-91e1-501f81075a49",
       "--client-id",
       "56c6492c-e72b-45da-a171-95bec2d4954b",
       "--client-certificate",
@@ -115,6 +122,13 @@ provider "helm" {
     cluster_ca_certificate = base64decode(module.cbd_plat_aks_cluster.cbd_plat_aks_cluster_cluster_ca_certificate)
 
     exec {
+      env = {
+        "AAD_SERVICE_PRINCIPAL_CLIENT_ID"         = "56c6492c-e72b-45da-a171-95bec2d4954b"
+        "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE" = "/home/vsts/work/1/s/terraform/terraform-cert.pem"
+        "AZURE_TENANT_ID"                         = "9e2392bf-52d6-4e65-91e1-501f81075a49"
+        "ARM_CLIENT_SECRET"                       = "" # Scrub the secret that's causing the conflict
+      }
+
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"
       args = [
@@ -127,7 +141,7 @@ provider "helm" {
         "--login",
         "spn",
         "--tenant-id",
-        data.azurerm_client_config.current.tenant_id,
+        "9e2392bf-52d6-4e65-91e1-501f81075a49",
         "--client-id",
         "56c6492c-e72b-45da-a171-95bec2d4954b",
         "--client-certificate",

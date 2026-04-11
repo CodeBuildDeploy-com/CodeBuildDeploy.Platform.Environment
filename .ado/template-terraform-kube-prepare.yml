@@ -33,7 +33,7 @@ steps:
     kubeloginVersion: '0.2.17'
 
 - bash: |
-    kubelogin get-token --force-login --login spn \
+    kubelogin get-token --login spn \
       --environment "AzurePublicCloud" \
       --server-id "6dae42f8-4368-4678-94ff-3960e28e3630" \
       --tenant-id "9e2392bf-52d6-4e65-91e1-501f81075a49" \

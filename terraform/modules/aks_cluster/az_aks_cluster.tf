@@ -35,14 +35,14 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   }
 
   dns_prefix                        = "cbd-${var.platform_env}-aks-cluster"
-  kubernetes_version                = "1.32.11"#data.azurerm_kubernetes_service_versions.current.latest_version
+  kubernetes_version                = "1.32.12"#data.azurerm_kubernetes_service_versions.current.latest_version
   node_resource_group               = "cbd-${var.platform_env}-nrg"
   role_based_access_control_enabled = true
 
   default_node_pool {
     name                 = "systempool"
     vm_size              = var.aks_system_pool_vm_size
-    orchestrator_version = "1.32.11"#data.azurerm_kubernetes_service_versions.current.latest_version
+    orchestrator_version = "1.32.12"#data.azurerm_kubernetes_service_versions.current.latest_version
     zones                = [1, 2, 3]
     auto_scaling_enabled = true
     max_count            = var.aks_system_pool_max_count
@@ -122,7 +122,7 @@ output "cbd_plat_aks_cluster_cluster_ca_certificate" {
 #resource "azurerm_kubernetes_cluster_node_pool" "cbd_plat_aks_cluster_nodepool1" {
 #  name                  = "nodepool1"
 #  vm_size               = "Standard_D2_v3"
-#  orchestrator_version  = "1.32.11"#data.azurerm_kubernetes_service_versions.current.latest_version
+#  orchestrator_version  = "1.32.12"#data.azurerm_kubernetes_service_versions.current.latest_version
 #  kubernetes_cluster_id = azurerm_kubernetes_cluster.cbd_plat_aks_cluster.id
 #  vnet_subnet_id        = azurerm_subnet.cbd_plat_subnet_aks.id
 #  zones                 = [1, 2, 3]

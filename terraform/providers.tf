@@ -92,6 +92,7 @@ provider "kubernetes" {
     command     = "kubelogin"
     args = [
       "get-token",
+      "--force-login",
       "--environment",
       "AzurePublicCloud",
       "--server-id",
@@ -118,6 +119,7 @@ provider "helm" {
       command     = "kubelogin"
       args = [
         "get-token",
+        "--force-login",
         "--environment",
         "AzurePublicCloud",
         "--server-id",

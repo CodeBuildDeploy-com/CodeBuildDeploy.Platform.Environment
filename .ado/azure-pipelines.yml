@@ -95,13 +95,12 @@ stages:
         runOnce:
           deploy:
             steps:
-            - template: template-terraform-kube-prepare.yml
-              parameters: 
-                service_connection: '$(Azure.Subscription.NonProdEnterprise)'
-                terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
             - template: .ado/template-terraform.yml@subplatform
               parameters: 
                 service_connection: '$(Azure.Subscription.NonProdEnterprise)'
+                tenant_id: '$(Azure.TenantId)'
+                tfuser_client_id: '$(Azure.Tf.User.ClientId)'
+                kubelogin: true
                 terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
                 tfstate_rg_name: $(Tf.State.NonProdEnterprise.RG)
                 tfstate_storage_account_name: $(Tf.State.NonProdEnterprise.SA)
@@ -123,13 +122,12 @@ stages:
           runOnce:
             deploy:
               steps:
-              - template: template-terraform-kube-prepare.yml
-                parameters: 
-                  service_connection: '$(Azure.Subscription.ProdPremium)'
-                  terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
               - template: .ado/template-terraform.yml@subplatform
                 parameters: 
                   service_connection: '$(Azure.Subscription.ProdPremium)'
+                  tenant_id: '$(Azure.TenantId)'
+                  tfuser_client_id: '$(Azure.Tf.User.ClientId)'
+                  kubelogin: true
                   terraform_work_directory: '$(Build.SourcesDirectory)/terraform'
                   tfstate_rg_name: $(Tf.State.ProdPremium.RG)
                   tfstate_storage_account_name: $(Tf.State.ProdPremium.SA)

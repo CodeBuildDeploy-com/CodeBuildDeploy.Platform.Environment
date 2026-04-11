@@ -92,6 +92,7 @@ provider "kubernetes" {
     command     = "kubelogin"
     args = [
       "get-token",
+      "-v", "10", # Highest verbosity
       "--environment",
       "AzurePublicCloud",
       "--server-id",
@@ -101,7 +102,7 @@ provider "kubernetes" {
       "--tenant-id",
       data.azurerm_client_config.current.tenant_id,
       "--client-id",
-      data.azuread_service_principal.current.client_id,
+      "56c6492c-e72b-45da-a171-95bec2d4954b",
       "--client-certificate",
       abspath("/home/vsts/work/1/s/terraform/terraform-cert.pem")
     ]
@@ -118,6 +119,7 @@ provider "helm" {
       command     = "kubelogin"
       args = [
         "get-token",
+        "-v", "10", # Highest verbosity
         "--environment",
         "AzurePublicCloud",
         "--server-id",

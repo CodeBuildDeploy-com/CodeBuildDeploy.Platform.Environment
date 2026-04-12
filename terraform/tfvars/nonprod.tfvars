@@ -13,5 +13,5 @@ aks_system_pool_vm_size            = "Standard_B2s"#Standard_B2ts_v2
 aks_system_pool_min_count          = 1
 aks_system_pool_max_count          = 3
 
-container_registry          = "codebuilddeploy.azurecr.io"
-container_registry_username = "codebuilddeploy"
+container_registry          = "codebuilddeploynonprod.azurecr.io"
+container_registry_username = "codebuilddeploynonprod"

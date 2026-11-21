@@ -6,15 +6,6 @@ module "cbd_plat_core_resources" {
   address_prefixes_platform_vnet = var.address_prefixes_platform_vnet
 }
 
-module "cbd_plat_bastion" {
-  depends_on = [module.cbd_plat_core_resources]
-  source     = "./modules/bastion"
-
-  subscription_friendly_name      = var.subscription_friendly_name
-  platform_env                    = var.platform_env
-  address_prefixes_bastion_subnet = var.address_prefixes_bastion_subnet
-}
-
 module "cbd_plat_container_registry" {
   depends_on = [module.cbd_plat_core_resources]
   source     = "./modules/container_registry"

@@ -40,11 +40,6 @@ variable "address_prefixes_sqldb_subnet" {
   type        = list(string)
 }
 
-variable "address_prefixes_bastion_subnet" {
-  description = "Address Prefixes for the Bastion subnet"
-  type        = list(string)
-}
-
 variable "aks_service_cidr" {
   type        = string
   description = "The Network Range used by the Kubernetes service."

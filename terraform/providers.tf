@@ -1,31 +1,31 @@
 terraform {
-  required_version = ">= 1.14.8"
+  required_version = ">= 1.17.2"
 
   required_providers {
     #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>4.68.0"
+      version = "~> 4.81.0"
     }
     #https://registry.terraform.io/providers/hashicorp/azuread/latest/docs
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~>3.8.0"
+      version = "~> 3.10.0"
     }
     #https://registry.terraform.io/providers/hashicorp/random/latest/docs
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.8.1"
+      version = "~> 3.9.1"
     }
     #https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 3.0.1"
+      version = "~> 3.5.0"
     }
     #https://registry.terraform.io/providers/hashicorp/helm/latest/docs
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 3.1.1"
+      version = "~> 3.3.0"
     }
   }
 

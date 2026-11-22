@@ -7,6 +7,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.81.0"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.14.0"
+    }
     #https://registry.terraform.io/providers/hashicorp/azuread/latest/docs
     azuread = {
       source  = "hashicorp/azuread"

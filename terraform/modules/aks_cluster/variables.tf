@@ -40,6 +40,11 @@ variable "aks_overlay_pod_cidr" {
   description = "Private pod CIDR for Azure CNI Overlay"
 }
 
+variable "aks_istio_revision" {
+  type        = string
+  description = "Managed Istio revision for the AKS cluster"
+}
+
 variable "aks_system_pool_version" {
   type        = string
   description = "Override the system pool version during separate AKS maintenance"

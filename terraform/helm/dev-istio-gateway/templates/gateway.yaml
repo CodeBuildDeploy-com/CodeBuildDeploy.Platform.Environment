@@ -1,0 +1,32 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: codebuilddeploy-dev
+spec:
+  gatewayClassName: istio
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/azure-allowed-ip-ranges: "87.192.98.248/32"
+  listeners:
+    - name: https-uk
+      hostname: dev.codebuilddeploy.co.uk
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: cbd-dev-ssl-cert
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-com
+      hostname: dev.codebuilddeploy.com
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: cbd-dev-ssl-cert
+      allowedRoutes:
+        namespaces:
+          from: Same

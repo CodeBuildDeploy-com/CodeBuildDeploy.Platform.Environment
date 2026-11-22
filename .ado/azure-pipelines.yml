@@ -24,6 +24,18 @@ parameters:
     - none
     - plan
     - apply
+  - name: aksIstioPhase
+    displayName: Non-prod Istio migration phase
+    type: string
+    default: none
+    values:
+    - none
+    - mesh
+    - gateway
+  - name: aksPlanOnly
+    displayName: Skip Terraform apply
+    type: boolean
+    default: false
 
 resources:
   repositories:
@@ -119,23 +131,30 @@ stages:
                 tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
                 tfstate_file_name: 'nonprod'
                 spoke_vars_file_name: 'nonprod'
-                apply_changes: ${{ ne(parameters.aksOverlayMode, 'plan') }}
+                apply_changes: ${{ and(ne(parameters.aksOverlayMode, 'plan'), ne(parameters.aksPlanOnly, true)) }}
                 ${{ if ne(parameters.aksOverlayMode, 'none') }}:
                   additional_command_options: '-var=aks_system_pool_version=1.33.8'
                 ${{ else }}:
                   additional_command_options: ''
-                ${{ if or(ne(parameters.aksUpgradeVersion, 'none'), ne(parameters.aksOverlayMode, 'none')) }}:
+                ${{ if or(ne(parameters.aksUpgradeVersion, 'none'), ne(parameters.aksOverlayMode, 'none'), ne(parameters.aksIstioPhase, 'none')) }}:
                   before_apply:
                   - bash: |
                       set -euo pipefail
-                      terraform show -json main.tfplan |
-                        jq -er --arg version "$AKS_UPGRADE_VERSION" --arg overlay "$AKS_OVERLAY_MODE" -f "$(Build.SourcesDirectory)/.ado/check-aks-upgrade.jq"
+                      if [[ "$AKS_ISTIO_PHASE" == none ]]; then
+                        terraform show -json main.tfplan |
+                          jq -er --arg version "$AKS_UPGRADE_VERSION" --arg overlay "$AKS_OVERLAY_MODE" -f "$(Build.SourcesDirectory)/.ado/check-aks-upgrade.jq"
+                      else
+                        test "$AKS_UPGRADE_VERSION:$AKS_OVERLAY_MODE" = none:none
+                        terraform show -json main.tfplan |
+                          jq -er --arg phase "$AKS_ISTIO_PHASE" -f "$(Build.SourcesDirectory)/.ado/check-aks-istio.jq"
+                      fi
                     displayName: Verify the saved Terraform plan only changes the approved AKS settings
                     workingDirectory: '$(Build.SourcesDirectory)/terraform'
                     env:
                       AKS_UPGRADE_VERSION: ${{ parameters.aksUpgradeVersion }}
                       AKS_OVERLAY_MODE: ${{ parameters.aksOverlayMode }}
-                  - ${{ if ne(parameters.aksOverlayMode, 'plan') }}:
+                      AKS_ISTIO_PHASE: ${{ parameters.aksIstioPhase }}
+                  - ${{ if and(ne(parameters.aksOverlayMode, 'plan'), ne(parameters.aksPlanOnly, true)) }}:
                     - task: AzureCLI@3
                       displayName: Snapshot non-prod Terraform state
                       inputs:
@@ -154,7 +173,7 @@ stages:
                         STATE_ACCOUNT: $(Tf.State.NonProdEnterprise.SA)
                         STATE_CONTAINER: $(Tf.State.NonProdEnterprise.Blob)
             
-  - ${{ if and(eq(variables['deploy.prod'], 'true'), eq(parameters.aksUpgradeVersion, 'none'), eq(parameters.aksOverlayMode, 'none')) }}:
+  - ${{ if and(eq(variables['deploy.prod'], 'true'), eq(parameters.aksUpgradeVersion, 'none'), eq(parameters.aksOverlayMode, 'none'), eq(parameters.aksIstioPhase, 'none'), ne(parameters.aksPlanOnly, true)) }}:
     - stage: Provision_Prod
       displayName: Provision Prod Platform
       dependsOn:

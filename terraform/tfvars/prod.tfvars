@@ -8,8 +8,11 @@ address_prefixes_aks_subnet        = ["10.0.2.64/26"]
 address_prefixes_sqldb_subnet      = ["10.0.2.128/28"]
 aks_service_cidr                   = "10.0.1.0/26"
 aks_dns_service_ip                 = "10.0.1.10"
-aks_system_pool_vm_size            = "Standard_D2_v3"
-aks_system_pool_min_count          = 1
+aks_overlay_pod_cidr               = "10.244.4.0/22"
+aks_gateway_api_enabled            = true
+aks_istio_version                  = "1.32.0"
+aks_system_pool_vm_size            = "Standard_D4as_v5"
+aks_system_pool_min_count          = 2
 aks_system_pool_max_count          = 3
 
 container_registry          = "codebuilddeployprod.azurecr.io"

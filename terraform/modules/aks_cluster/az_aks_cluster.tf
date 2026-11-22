@@ -35,14 +35,14 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   }
 
   dns_prefix                        = "cbd-${var.platform_env}-aks-cluster"
-  kubernetes_version                = "1.33.8"#data.azurerm_kubernetes_service_versions.current.latest_version
+  kubernetes_version                = "1.34.12"
   node_resource_group               = "cbd-${var.platform_env}-nrg"
   role_based_access_control_enabled = true
 
   default_node_pool {
     name                 = "systempool"
     vm_size              = var.aks_system_pool_vm_size
-    orchestrator_version = "1.33.8"#data.azurerm_kubernetes_service_versions.current.latest_version
+    orchestrator_version = "1.34.12"
     zones                = [1, 2, 3]
     auto_scaling_enabled = true
     max_count            = var.aks_system_pool_max_count

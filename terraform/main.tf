@@ -38,8 +38,7 @@ module "cbd_plat_aks_cluster" {
 }
 
 module "cbd_plat_aks_cluster_configure" {
-  depends_on = [module.cbd_plat_aks_cluster]
-  source     = "./modules/aks_cluster_configure"
+  source = "./modules/aks_cluster_configure"
  
   subscription_friendly_name  = var.subscription_friendly_name
   platform_env                = var.platform_env

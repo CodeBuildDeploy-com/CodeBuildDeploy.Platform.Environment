@@ -7,8 +7,19 @@ def creates_release($address; $name; $namespace):
 [.resource_changes[] |
   select(.mode == "managed" and (.change.actions != ["no-op"] or .previous_address != null))
 ]
-| if $phase != "mesh"
-    or any(.[]; .previous_address != null)
+| if any(.[]; .previous_address != null) then
+    error("Unexpected resource move in the Istio plan")
+  elif $phase == "gateway" then
+    if length != 1
+      or .[0].address != "helm_release.dev_istio_gateway[0]"
+      or .[0].change.actions != ["update"]
+      or .[0].change.after.name != "cbd-dev-istio-gateway"
+      or .[0].change.after.namespace != "cbd-nonprod-dev" then
+      error("Expected only an in-place update to the non-prod Istio gateway Helm release")
+    else
+      "Verified non-prod Istio ingress Helm update"
+    end
+  elif $phase != "mesh"
     or length != 3
     or (creates_release("helm_release.istio_base[0]"; "istio-base"; "istio-system") | not)
     or (creates_release("helm_release.istiod[0]"; "istiod"; "istio-system") | not)

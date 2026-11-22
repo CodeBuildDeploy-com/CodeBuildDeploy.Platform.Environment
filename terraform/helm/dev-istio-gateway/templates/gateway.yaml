@@ -7,6 +7,10 @@ spec:
   infrastructure:
     annotations:
       service.beta.kubernetes.io/azure-allowed-ip-ranges: "87.192.98.248/32"
+      service.beta.kubernetes.io/port_443_health-probe_protocol: "Http"
+      service.beta.kubernetes.io/port_443_health-probe_port: "status-port"
+      service.beta.kubernetes.io/port_443_health-probe_request-path: "/healthz/ready"
+      service.beta.kubernetes.io/port_15021_no_lb_rule: "true"
   listeners:
     - name: https-uk
       hostname: dev.codebuilddeploy.co.uk

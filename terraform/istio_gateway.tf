@@ -62,6 +62,7 @@ resource "helm_release" "dev_istio_gateway" {
   name      = "cbd-dev-istio-gateway"
   namespace = "cbd-nonprod-dev"
   chart     = "${path.module}/helm/dev-istio-gateway"
+  version   = yamldecode(file("${path.module}/helm/dev-istio-gateway/Chart.yaml")).version
   atomic    = true
   timeout   = 600
 

@@ -31,6 +31,7 @@ parameters:
     values:
     - none
     - mesh
+    - gateway
   - name: aksPlanOnly
     displayName: Skip Terraform apply
     type: boolean

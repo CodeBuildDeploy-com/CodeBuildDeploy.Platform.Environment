@@ -11,7 +11,6 @@ aks_dns_service_ip                 = "10.0.3.10"
 aks_overlay_pod_cidr               = "10.244.0.0/22"
 aks_gateway_api_enabled            = true
 aks_istio_version                  = "1.32.0"
-aks_istio_gateway_enabled          = true
 aks_system_pool_vm_size            = "Standard_B2s"#Standard_B2ts_v2
 aks_system_pool_min_count          = 1
 aks_system_pool_max_count          = 3

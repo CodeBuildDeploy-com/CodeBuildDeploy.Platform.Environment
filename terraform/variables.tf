@@ -68,12 +68,6 @@ variable "aks_gateway_api_enabled" {
   default     = false
 }
 
-variable "aks_istio_gateway_enabled" {
-  type        = bool
-  description = "Deploy the CodeBuildDeploy dev routes through the Istio ingress gateway"
-  default     = false
-}
-
 variable "aks_system_pool_version" {
   type        = string
   description = "Override the system pool version during separate AKS maintenance"

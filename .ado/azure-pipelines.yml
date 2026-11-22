@@ -30,8 +30,7 @@ parameters:
     default: none
     values:
     - none
-    - mesh
-    - gateway
+    - handoff
   - name: aksPlanOnly
     displayName: Skip Terraform apply
     type: boolean

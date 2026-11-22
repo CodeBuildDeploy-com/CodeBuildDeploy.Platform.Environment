@@ -56,15 +56,11 @@ resource "helm_release" "istiod" {
   depends_on = [helm_release.istio_base]
 }
 
-resource "helm_release" "dev_istio_gateway" {
-  count = var.aks_istio_gateway_enabled ? 1 : 0
+# Platform.App upgrades the existing Helm release directly.
+removed {
+  from = helm_release.dev_istio_gateway
 
-  name      = "cbd-dev-istio-gateway"
-  namespace = "cbd-nonprod-dev"
-  chart     = "${path.module}/helm/dev-istio-gateway"
-  version   = yamldecode(file("${path.module}/helm/dev-istio-gateway/Chart.yaml")).version
-  atomic    = true
-  timeout   = 600
-
-  depends_on = [helm_release.istiod]
+  lifecycle {
+    destroy = false
+  }
 }

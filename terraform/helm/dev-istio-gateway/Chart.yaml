@@ -1,5 +1,0 @@
-apiVersion: v2
-name: dev-istio-gateway
-description: CodeBuildDeploy development HTTPS ingress
-version: 1.0.1
-type: application

@@ -31,7 +31,6 @@ parameters:
     values:
     - none
     - handoff
-    - retire
   - name: aksPlanOnly
     displayName: Skip Terraform apply
     type: boolean

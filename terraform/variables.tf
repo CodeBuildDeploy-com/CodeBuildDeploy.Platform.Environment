@@ -56,9 +56,9 @@ variable "aks_overlay_pod_cidr" {
   default     = null
 }
 
-variable "aks_istio_revision" {
+variable "aks_istio_version" {
   type        = string
-  description = "Managed Istio revision for the AKS cluster"
+  description = "Helm chart version for self-managed Istio"
   default     = null
 }
 

@@ -91,14 +91,6 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
     identity_ids = [azurerm_user_assigned_identity.cbd_plat_aks_identity.id]
   }
 
-  dynamic "service_mesh_profile" {
-    for_each = var.aks_istio_revision == null ? [] : [var.aks_istio_revision]
-    content {
-      mode      = "Istio"
-      revisions = [service_mesh_profile.value]
-    }
-  }
-
   # RBAC and Azure AD Integration Block
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true

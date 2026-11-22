@@ -24,6 +24,19 @@ def unchanged_except($paths):
       else
         "Verified non-prod Istio asm-1-31 and Managed Gateway API enablement"
       end
+  elif $phase == "unmesh" then
+    $changes[0].change as $aks
+    | if ($changes | length) != 1
+        or $changes[0].address != "module.cbd_plat_aks_cluster.azurerm_kubernetes_cluster.cbd_plat_aks_cluster"
+        or $changes[0].change.actions != ["update"]
+        or $aks.after.name != "cbd-nonprod-aks-cluster"
+        or $aks.before.service_mesh_profile[0].mode != "Istio"
+        or ($aks.after.service_mesh_profile // []) != []
+        or ($aks | unchanged_except([["service_mesh_profile"]]) | not) then
+        error("Expected only the removal of the managed Istio add-on")
+      else
+        "Verified removal of non-prod managed Istio"
+      end
   elif $phase == "gateway" then
     if ($changes | length) != 1
         or $changes[0].address != "helm_release.dev_istio_gateway[0]"

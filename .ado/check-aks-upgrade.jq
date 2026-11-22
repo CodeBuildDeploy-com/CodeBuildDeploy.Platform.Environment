@@ -23,7 +23,7 @@ def unchanged_except($paths):
       or .before.network_profile[0].network_plugin != "azure"
       or .after.network_profile[0].network_plugin != "azure"
       or .after.network_profile[0].network_plugin_mode != "overlay"
-      or .after.network_profile[0].pod_cidr != "172.31.252.0/22"
+      or .after.network_profile[0].pod_cidr != "10.244.0.0/22"
       or .after.kubernetes_version != "1.34.12"
       or .after.default_node_pool[0].orchestrator_version != "1.33.8"
       or .after.default_node_pool[0].vm_size != "Standard_B2s"
@@ -35,7 +35,7 @@ def unchanged_except($paths):
       ]) | not) then
       error("Expected only the approved Overlay settings, with the existing system pool and versions")
     else
-      "Verified in-place Azure CNI Overlay conversion to 172.31.252.0/22"
+      "Verified in-place Azure CNI Overlay conversion to 10.244.0.0/22"
     end
   elif .after.kubernetes_version != $version
     or .after.default_node_pool[0].orchestrator_version != $version then

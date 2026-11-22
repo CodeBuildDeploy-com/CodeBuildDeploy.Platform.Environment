@@ -16,6 +16,14 @@ parameters:
     displayName: Guard a non-prod AKS version upgrade
     type: string
     default: none
+  - name: aksOverlayMode
+    displayName: Non-prod Azure CNI Overlay migration
+    type: string
+    default: none
+    values:
+    - none
+    - plan
+    - apply
 
 resources:
   repositories:
@@ -111,36 +119,42 @@ stages:
                 tfstate_blob_name: $(Tf.State.NonProdEnterprise.Blob)
                 tfstate_file_name: 'nonprod'
                 spoke_vars_file_name: 'nonprod'
-                additional_command_options: ''
-                ${{ if ne(parameters.aksUpgradeVersion, 'none') }}:
+                apply_changes: ${{ ne(parameters.aksOverlayMode, 'plan') }}
+                ${{ if ne(parameters.aksOverlayMode, 'none') }}:
+                  additional_command_options: '-var=aks_system_pool_version=1.33.8'
+                ${{ else }}:
+                  additional_command_options: ''
+                ${{ if or(ne(parameters.aksUpgradeVersion, 'none'), ne(parameters.aksOverlayMode, 'none')) }}:
                   before_apply:
                   - bash: |
                       set -euo pipefail
                       terraform show -json main.tfplan |
-                        jq -er --arg version "$AKS_UPGRADE_VERSION" -f "$(Build.SourcesDirectory)/.ado/check-aks-upgrade.jq"
-                    displayName: Verify the saved Terraform plan only upgrades AKS
+                        jq -er --arg version "$AKS_UPGRADE_VERSION" --arg overlay "$AKS_OVERLAY_MODE" -f "$(Build.SourcesDirectory)/.ado/check-aks-upgrade.jq"
+                    displayName: Verify the saved Terraform plan only changes the approved AKS settings
                     workingDirectory: '$(Build.SourcesDirectory)/terraform'
                     env:
                       AKS_UPGRADE_VERSION: ${{ parameters.aksUpgradeVersion }}
-                  - task: AzureCLI@3
-                    displayName: Snapshot non-prod Terraform state
-                    inputs:
-                      azureSubscription: '$(Azure.Subscription.NonProdEnterprise)'
-                      scriptType: bash
-                      scriptLocation: inlineScript
-                      inlineScript: |
-                        set -euo pipefail
-                        blob=(--account-name "$STATE_ACCOUNT" --container-name "$STATE_CONTAINER" --name nonprod.tfstate --auth-mode key --only-show-errors)
-                        snapshot=$(az storage blob snapshot "${blob[@]}" --query snapshot -o tsv)
-                        test -n "$snapshot"
-                        size=$(az storage blob show "${blob[@]}" --snapshot "$snapshot" --query properties.contentLength -o tsv)
-                        test "$size" -gt 0
-                        echo "Verified pre-upgrade non-prod.tfstate snapshot $snapshot"
-                    env:
-                      STATE_ACCOUNT: $(Tf.State.NonProdEnterprise.SA)
-                      STATE_CONTAINER: $(Tf.State.NonProdEnterprise.Blob)
+                      AKS_OVERLAY_MODE: ${{ parameters.aksOverlayMode }}
+                  - ${{ if ne(parameters.aksOverlayMode, 'plan') }}:
+                    - task: AzureCLI@3
+                      displayName: Snapshot non-prod Terraform state
+                      inputs:
+                        azureSubscription: '$(Azure.Subscription.NonProdEnterprise)'
+                        scriptType: bash
+                        scriptLocation: inlineScript
+                        inlineScript: |
+                          set -euo pipefail
+                          blob=(--account-name "$STATE_ACCOUNT" --container-name "$STATE_CONTAINER" --name nonprod.tfstate --auth-mode key --only-show-errors)
+                          snapshot=$(az storage blob snapshot "${blob[@]}" --query snapshot -o tsv)
+                          test -n "$snapshot"
+                          size=$(az storage blob show "${blob[@]}" --snapshot "$snapshot" --query properties.contentLength -o tsv)
+                          test "$size" -gt 0
+                          echo "Verified pre-upgrade non-prod.tfstate snapshot $snapshot"
+                      env:
+                        STATE_ACCOUNT: $(Tf.State.NonProdEnterprise.SA)
+                        STATE_CONTAINER: $(Tf.State.NonProdEnterprise.Blob)
             
-  - ${{ if and(eq(variables['deploy.prod'], 'true'), eq(parameters.aksUpgradeVersion, 'none')) }}:
+  - ${{ if and(eq(variables['deploy.prod'], 'true'), eq(parameters.aksUpgradeVersion, 'none'), eq(parameters.aksOverlayMode, 'none')) }}:
     - stage: Provision_Prod
       displayName: Provision Prod Platform
       dependsOn:

@@ -32,6 +32,8 @@ module "cbd_plat_aks_cluster" {
   address_prefixes_aks_subnet = var.address_prefixes_aks_subnet
   aks_service_cidr            = var.aks_service_cidr
   aks_dns_service_ip          = var.aks_dns_service_ip
+  aks_overlay_pod_cidr        = var.aks_overlay_pod_cidr
+  aks_system_pool_version     = var.aks_system_pool_version
   aks_system_pool_vm_size     = var.aks_system_pool_vm_size
   aks_system_pool_min_count   = var.aks_system_pool_min_count
   aks_system_pool_max_count   = var.aks_system_pool_max_count

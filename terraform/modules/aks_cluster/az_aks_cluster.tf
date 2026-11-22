@@ -42,7 +42,7 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   default_node_pool {
     name                 = "systempool"
     vm_size              = var.aks_system_pool_vm_size
-    orchestrator_version = "1.34.12"
+    orchestrator_version = coalesce(var.aks_system_pool_version, "1.34.12")
     zones                = [1, 2, 3]
     auto_scaling_enabled = true
     max_count            = var.aks_system_pool_max_count
@@ -77,11 +77,13 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   #}
 
   network_profile {
-    network_plugin    = "azure"
-    outbound_type     = "loadBalancer"
-    load_balancer_sku = "standard"
-    service_cidr      = var.aks_service_cidr
-    dns_service_ip    = var.aks_dns_service_ip
+    network_plugin      = "azure"
+    network_plugin_mode = var.aks_overlay_pod_cidr == null ? null : "overlay"
+    pod_cidr            = var.aks_overlay_pod_cidr
+    outbound_type       = "loadBalancer"
+    load_balancer_sku   = "standard"
+    service_cidr        = var.aks_service_cidr
+    dns_service_ip      = var.aks_dns_service_ip
   }
 
   identity {

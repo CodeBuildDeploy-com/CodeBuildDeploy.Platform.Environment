@@ -50,6 +50,18 @@ variable "aks_dns_service_ip" {
   description = "IP address within the Kubernetes service address range that will be used by cluster service discovery (kube-dns)"
 }
 
+variable "aks_overlay_pod_cidr" {
+  type        = string
+  description = "Private pod CIDR for Azure CNI Overlay"
+  default     = null
+}
+
+variable "aks_system_pool_version" {
+  type        = string
+  description = "Override the system pool version during separate AKS maintenance"
+  default     = null
+}
+
 variable "aks_system_pool_vm_size" {
   type        = string
   description = "The SKU to be used by the AKS system node pool"

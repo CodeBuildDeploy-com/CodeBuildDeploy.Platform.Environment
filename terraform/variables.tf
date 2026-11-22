@@ -67,7 +67,7 @@ variable "aks_system_pool_max_count" {
 
 variable "container_registry" {
   type        = string
-  description = "The name of the container registry e.g. codebuilddeploy.azurecr.io"
+  description = "The name of the container registry e.g. codebuilddeploynonprod.azurecr.io"
 }
 
 variable "container_registry_username" {

@@ -1,0 +1,53 @@
+#cloud-config
+package_update: true
+packages:
+  - nftables
+  - wireguard-tools
+
+write_files:
+  - path: /etc/sysctl.d/90-wireguard.conf
+    content: |
+      net.ipv4.ip_forward = 1
+  - path: /etc/nftables.conf
+    defer: true
+    content: |
+      #!/usr/sbin/nft -f
+      flush ruleset
+
+      table inet wireguard {
+        chain forward {
+          type filter hook forward priority filter; policy drop;
+          iifname "wg0" ip saddr ${peer_tunnel_cidr} ip daddr { ${aks_subnet_cidrs} } tcp dport 443 ct state { new, established } accept
+          oifname "wg0" ip saddr { ${aks_subnet_cidrs} } ip daddr ${peer_tunnel_cidr} ct state { established, related } accept
+        }
+
+        chain postrouting {
+          type nat hook postrouting priority srcnat; policy accept;
+          iifname "wg0" ip saddr ${peer_tunnel_cidr} ip daddr { ${aks_subnet_cidrs} } tcp dport 443 masquerade
+        }
+      }
+  - path: /etc/systemd/system/wg-quick@wg0.service.d/firewall.conf
+    content: |
+      [Unit]
+      Requires=nftables.service
+      After=nftables.service
+
+runcmd:
+  - |
+    set -eu
+    umask 077
+    install -d -m 0700 /etc/wireguard
+    if [ ! -e /etc/wireguard/wg0.conf ]; then
+      config=$(mktemp /etc/wireguard/wg0.conf.XXXXXX)
+      trap 'rm -f "$config"' EXIT
+      private_key=$(wg genkey)
+      {
+        printf '[Interface]\nAddress = %s\nPrivateKey = %s\n' '${tunnel_address}' "$private_key"
+        printf '\n[Peer]\nPublicKey = %s\nEndpoint = %s\nAllowedIPs = %s\nPersistentKeepalive = 25\n' \
+          '${peer_public_key}' '${peer_endpoint}' '${peer_tunnel_cidr}'
+      } > "$config"
+      mv "$config" /etc/wireguard/wg0.conf
+    fi
+    sysctl -p /etc/sysctl.d/90-wireguard.conf
+    systemctl daemon-reload
+    systemctl enable --now nftables.service wg-quick@wg0.service

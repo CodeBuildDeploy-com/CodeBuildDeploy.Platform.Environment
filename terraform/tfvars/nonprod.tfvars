@@ -17,3 +17,10 @@ aks_system_pool_max_count          = 3
 
 container_registry          = "codebuilddeploynonprod.azurecr.io"
 container_registry_username = "codebuilddeploynonprod"
+
+wireguard = {
+  subnet_cidr      = "10.0.4.144/29"
+  peer_endpoint    = "87.192.98.248:51821"
+  tunnel_address   = "10.254.0.1/30"
+  peer_tunnel_cidr = "10.254.0.2/32"
+}

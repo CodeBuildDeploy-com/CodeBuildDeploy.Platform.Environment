@@ -40,6 +40,50 @@ variable "address_prefixes_sqldb_subnet" {
   type        = list(string)
 }
 
+variable "wireguard" {
+  description = "WireGuard network and compute settings for the platform environment"
+  type = object({
+    subnet_cidr      = string
+    peer_endpoint    = string
+    tunnel_address   = string
+    peer_tunnel_cidr = string
+    vm_size          = optional(string, "Standard_B2pts_v2")
+    image_sku        = optional(string, "minimal-arm64")
+  })
+
+  validation {
+    condition = alltrue([
+      can(cidrnetmask(var.wireguard.subnet_cidr)),
+      can(cidrnetmask(var.wireguard.tunnel_address)),
+      can(cidrnetmask("${split(":", var.wireguard.peer_endpoint)[0]}/32")),
+      can(regex("^[0-9.]+:[0-9]{1,5}$", var.wireguard.peer_endpoint)),
+      try(tonumber(split(":", var.wireguard.peer_endpoint)[1]) >= 1 && tonumber(split(":", var.wireguard.peer_endpoint)[1]) <= 65535, false),
+      can(cidrnetmask(var.wireguard.peer_tunnel_cidr)) && endswith(var.wireguard.peer_tunnel_cidr, "/32"),
+    ])
+    error_message = "WireGuard requires IPv4 CIDRs, a /32 tunnel peer address, and a homelab endpoint in IPv4:port format."
+  }
+}
+
+variable "wireguard_admin_ssh_public_key" {
+  description = "OpenSSH public key for Azure VM provisioning"
+  type        = string
+
+  validation {
+    condition     = can(regex("^(ssh-ed25519|ssh-rsa) [A-Za-z0-9+/]+={0,2}$", trimspace(var.wireguard_admin_ssh_public_key)))
+    error_message = "Supply an OpenSSH RSA or Ed25519 public key without a comment from the deployment variables."
+  }
+}
+
+variable "wireguard_peer_public_key" {
+  description = "WireGuard public key of the homelab listener for this environment"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9+/]{43}=$", var.wireguard_peer_public_key))
+    error_message = "Supply the homelab listener's WireGuard public key from the deployment variables."
+  }
+}
+
 variable "aks_service_cidr" {
   type        = string
   description = "The Network Range used by the Kubernetes service."

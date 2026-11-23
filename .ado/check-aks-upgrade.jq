@@ -17,27 +17,7 @@ def unchanged_except($paths):
 | if .after.name != "cbd-nonprod-aks-cluster" then
     error("Expected the non-prod AKS cluster")
   else . end
-| if $overlay != "none" then
-    if $version != "none"
-      or (.before.network_profile[0].network_plugin_mode // "") != ""
-      or .before.network_profile[0].network_plugin != "azure"
-      or .after.network_profile[0].network_plugin != "azure"
-      or .after.network_profile[0].network_plugin_mode != "overlay"
-      or .after.network_profile[0].pod_cidr != "10.244.0.0/22"
-      or .after.kubernetes_version != "1.34.12"
-      or .after.default_node_pool[0].orchestrator_version != "1.33.8"
-      or .after.default_node_pool[0].vm_size != "Standard_B2s"
-      or .after.default_node_pool[0].name != "systempool"
-      or .after.default_node_pool[0].vnet_subnet_id != .before.default_node_pool[0].vnet_subnet_id
-      or (unchanged_except([
-        ["network_profile", 0, "network_plugin_mode"],
-        ["network_profile", 0, "pod_cidr"]
-      ]) | not) then
-      error("Expected only the approved Overlay settings, with the existing system pool and versions")
-    else
-      "Verified in-place Azure CNI Overlay conversion to 10.244.0.0/22"
-    end
-  elif .after.kubernetes_version != $version
+| if .after.kubernetes_version != $version
     or .after.default_node_pool[0].orchestrator_version != $version then
     error("The non-prod control plane and system pool must both target " + $version)
   elif (unchanged_except([["kubernetes_version"], ["default_node_pool", 0, "orchestrator_version"]]) | not) then

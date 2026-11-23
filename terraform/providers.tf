@@ -5,7 +5,7 @@ terraform {
     #https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.81.0"
+      version = "~> 5.14.0"
     }
     azapi = {
       source  = "Azure/azapi"
@@ -37,6 +37,17 @@ terraform {
 }
 
 provider "azurerm" {
+  resource_provider_registrations = "none"
+  resource_providers_to_register = [
+    "Microsoft.Compute", # AKS node pools use Azure Compute.
+    "Microsoft.ContainerRegistry",
+    "Microsoft.ContainerService",
+    "Microsoft.KeyVault",
+    "Microsoft.ManagedIdentity",
+    "Microsoft.Network",
+    "Microsoft.Sql",
+  ]
+
   features {
     key_vault {
       purge_soft_delete_on_destroy    = true

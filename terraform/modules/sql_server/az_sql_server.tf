@@ -69,10 +69,9 @@ resource "azurerm_private_endpoint" "cbd_plat_sqldb_pe" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "cbd_plat_sqldb_vnet_link" {
-  name                  = "cbd-${var.platform_env}-sqldb-vnet-link"
-  resource_group_name   = data.azurerm_resource_group.cbd_plat_rg.name
-  private_dns_zone_name = azurerm_private_dns_zone.cbd_plat_sqldb_dns_zone.name
-  virtual_network_id    = data.azurerm_virtual_network.cbd_plat_vnet.id
+  name                = "cbd-${var.platform_env}-sqldb-vnet-link"
+  private_dns_zone_id = azurerm_private_dns_zone.cbd_plat_sqldb_dns_zone.id
+  virtual_network_id  = data.azurerm_virtual_network.cbd_plat_vnet.id
 }
 
 # Managed Identity

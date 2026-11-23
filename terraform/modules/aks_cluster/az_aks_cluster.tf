@@ -38,6 +38,11 @@ resource "azurerm_kubernetes_cluster" "cbd_plat_aks_cluster" {
   kubernetes_version                = "1.36.5"
   node_resource_group               = "cbd-${var.platform_env}-nrg"
   role_based_access_control_enabled = true
+  oidc_issuer_enabled               = false
+
+  node_provisioning_profile {
+    mode = "Manual"
+  }
 
   default_node_pool {
     name                 = "systempool"

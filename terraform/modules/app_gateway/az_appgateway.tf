@@ -50,7 +50,7 @@ resource "azurerm_application_gateway" "cbd_plat_appgateway" {
   name                = "cbd-${var.platform_env}-appgateway"
   resource_group_name = data.azurerm_resource_group.cbd_plat_rg.name
   location            = data.azurerm_resource_group.cbd_plat_rg.location
-  enable_http2        = true
+  http2_enabled       = true
   
   lifecycle {
     # this prevents changes made by aks from being reset on each terraform run

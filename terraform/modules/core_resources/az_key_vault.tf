@@ -4,6 +4,7 @@ resource "azurerm_key_vault" "cbd_plat_kv" {
   location                        = var.default_location
   tenant_id                       = data.azurerm_client_config.current.tenant_id
   sku_name                        = "standard"
+  rbac_authorization_enabled      = false
   enabled_for_deployment          = true
   enabled_for_template_deployment = true
   purge_protection_enabled        = true

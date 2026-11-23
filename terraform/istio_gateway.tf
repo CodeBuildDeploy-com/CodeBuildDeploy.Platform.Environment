@@ -2,7 +2,7 @@
 resource "azapi_update_resource" "aks_gateway_api" {
   count = var.aks_gateway_api_enabled ? 1 : 0
 
-  type        = "Microsoft.ContainerService/managedClusters@2026-03-01"
+  type        = "Microsoft.ContainerService/managedClusters@2026-09-01"
   resource_id = module.cbd_plat_aks_cluster.cbd_plat_aks_cluster_id
   body = {
     properties = {

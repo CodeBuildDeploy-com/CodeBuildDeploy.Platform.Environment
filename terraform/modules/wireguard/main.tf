@@ -1,3 +1,7 @@
+locals {
+  ssh_public_key_format = "^(ssh-ed25519|ssh-rsa)[ \\t]+([A-Za-z0-9+/]+={0,2})(?:[ \\t]+[^\\r\\n]+)?$"
+}
+
 resource "azurerm_subnet" "wireguard" {
   name                            = "${var.name}-subnet"
   resource_group_name             = var.resource_group_name
@@ -66,7 +70,7 @@ resource "azurerm_linux_virtual_machine" "wireguard" {
 
   admin_ssh_key {
     username   = "azureuser"
-    public_key = var.admin_ssh_public_key
+    public_key = join(" ", regex(local.ssh_public_key_format, trimspace(var.admin_ssh_public_key)))
   }
 
   os_disk {

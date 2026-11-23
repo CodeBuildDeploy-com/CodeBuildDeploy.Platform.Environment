@@ -31,7 +31,13 @@ variable "peer_endpoint" {
 }
 
 variable "peer_public_key" {
-  type = string
+  type      = string
+  sensitive = true
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9+/]{43}=$", var.peer_public_key))
+    error_message = "The WireGuard peer key must be a base64-encoded 32-byte public key."
+  }
 }
 
 variable "tunnel_address" {
@@ -47,7 +53,13 @@ variable "aks_subnet_cidrs" {
 }
 
 variable "admin_ssh_public_key" {
-  type = string
+  type      = string
+  sensitive = true
+
+  validation {
+    condition     = can(regex(local.ssh_public_key_format, trimspace(var.admin_ssh_public_key)))
+    error_message = "The SSH key must be a single OpenSSH RSA or Ed25519 public key."
+  }
 }
 
 variable "tags" {

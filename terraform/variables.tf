@@ -64,26 +64,6 @@ variable "wireguard" {
   }
 }
 
-variable "wireguard_admin_ssh_public_key" {
-  description = "OpenSSH public key for Azure VM provisioning"
-  type        = string
-
-  validation {
-    condition     = can(regex("^(ssh-ed25519|ssh-rsa) [A-Za-z0-9+/]+={0,2}$", trimspace(var.wireguard_admin_ssh_public_key)))
-    error_message = "Supply an OpenSSH RSA or Ed25519 public key without a comment from the deployment variables."
-  }
-}
-
-variable "wireguard_peer_public_key" {
-  description = "WireGuard public key of the homelab listener for this environment"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[A-Za-z0-9+/]{43}=$", var.wireguard_peer_public_key))
-    error_message = "Supply the homelab listener's WireGuard public key from the deployment variables."
-  }
-}
-
 variable "aks_service_cidr" {
   type        = string
   description = "The Network Range used by the Kubernetes service."

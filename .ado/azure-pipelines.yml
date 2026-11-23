@@ -116,9 +116,6 @@ stages:
                 tfstate_file_name: 'nonprod'
                 spoke_vars_file_name: 'nonprod'
                 apply_changes: ${{ ne(parameters.terraformPlanOnly, true) }}
-                additional_command_options: >-
-                  -var="wireguard_admin_ssh_public_key=$(WireGuard.AdminSshPublicKey)"
-                  -var="wireguard_peer_public_key=$(WireGuard.NonProd.HomelabPublicKey)"
                 ${{ if ne(parameters.aksUpgradeVersion, 'none') }}:
                   before_apply:
                   - bash: |
@@ -173,6 +170,3 @@ stages:
                   tfstate_blob_name: $(Tf.State.ProdPremium.Blob)
                   tfstate_file_name: 'prod'
                   spoke_vars_file_name: 'prod'
-                  additional_command_options: >-
-                    -var="wireguard_admin_ssh_public_key=$(WireGuard.AdminSshPublicKey)"
-                    -var="wireguard_peer_public_key=$(WireGuard.Prod.HomelabPublicKey)"
